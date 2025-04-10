@@ -8,17 +8,6 @@ TPU-MLIR is an open-source machine-learning compiler based on MLIR for TPU. This
 Currently, supported Deep Learning frameworks are PyTorch, ONNX, TFLite and Caffe. Models from other frameworks need to be converted to ONNX models.
 
 
-# Prebuilt TPU-MLIR Python Package
-
-We provide TPU-MLIR python package for quick installation by skipping the building step.
-Environment prerequisite: python >= 3.10 and ubuntu:22.04 (It is recommended to use our docker image directly).
-
-To install:
-
-``` shell
-pip install tpu_mlir
-```
-
 
 # Usage
 
