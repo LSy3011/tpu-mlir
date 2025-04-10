@@ -284,8 +284,4 @@ model_tool --info resnet18_1684x_f32.bmodel
 
 
 
-# 相关链接
 
-* [官方网站](https://tpumlir.org)
-* [问答平台](https://ask.tpumlir.org)
-* [教学视频](https://space.bilibili.com/1829795304/channel/collectiondetail?sid=734875)
