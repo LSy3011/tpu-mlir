@@ -258,8 +258,4 @@ model_tool --info resnet18_1684x_f32.bmodel
 
 
 
-# Related Links
 
-* [Official Network](https://tpumlir.org)
-* [Discourse](https://ask.tpumlir.org)
-* [Videos](https://space.bilibili.com/1829795304/channel/collectiondetail?sid=734875)
