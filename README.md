@@ -1,12 +1,9 @@
-![](./docs/assets/sophgo_cover.png)
 
 # TPU-MLIR
 
-For Chinese version: [README](https://github.com/sophgo/tpu-mlir/blob/master/README_cn.md).
 
 TPU-MLIR is an open-source machine-learning compiler based on MLIR for TPU. This project provides a complete toolchain, which can convert pre-trained neural networks from different frameworks into binary files `bmodel` that can be efficiently operated on TPUs.
 
-SOPHGO aims to become a leading global provider of general-purpose computing power. SOPHGO focuses on the research, development, and promotion of computing products such as Deep Learning and RISC-V processors, and has built a comprehensive application matrix covering the 'cloud, edge, and endpoint' scenarios with its self-developed products. SOPHGO provides computing products and integrated solutions for applications such as smart cities, intelligent computing centers, smart security, intelligent transportation, safety production, industrial quality inspection, and intelligent terminals. The company has research and development centers in more than 10 cities in China including Beijing, Shanghai, Shenzhen, Qingdao, and Xiamen, as well as in the United States and Singapore.
 
 Currently, supported Deep Learning frameworks are PyTorch, ONNX, TFLite and Caffe. Models from other frameworks need to be converted to ONNX models.
 
@@ -48,41 +45,6 @@ Here are some resources to help you better understand the project:
 
 If you have any questions while doing the tasks above, you can ask or check the existing answers in our [Q&A Platform](https://ask.tpumlir.org/questions).
 
-# How to Build
-
-After cloning the code of this project, it needs to be compiled in docker.
-
-* Download the required image from [dockerhub](https://hub.docker.com/r/sophgo/tpuc_dev).
-
-``` shell
-docker pull sophgo/tpuc_dev:latest
-```
-
-* If the pulling failed, you can download it in the following way:
-
-``` shell
-wget https://sophon-assets.sophon.cn/sophon-prod-s3/drive/25/01/20/10/sophgo-tpuc_dev_v3.3.tar.gz
-docker load -i sophgo-tpuc_dev_v3.3.tar.gz
-```
-
-* Create the container:
-
-``` shell
-# myname1234 is just an example, you can set your own name
-docker run --privileged --name myname1234 -v $PWD:/workspace -it sophgo/tpuc_dev:latest
-```
-
-After the container is created, the directory of the code in docker should be `/workspace/tpu-mlir`.
-
-* Building
-
-Run the following command in the project directory:
-
-``` shell
-cd tpu-mlir
-source ./envsetup.sh
-./build.sh
-```
 # Usage
 
 Introduce the usage of `TPU-MLIR` by a simple example of compiling `yolov5s.onnx` and running it on the BM1684X TPU platform.
