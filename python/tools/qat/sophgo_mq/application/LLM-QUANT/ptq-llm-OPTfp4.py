@@ -32,11 +32,11 @@ from transformers import default_data_collator
 from transformers.onnx.features import FeaturesManager
 from datasets import load_dataset,load_metric
 import torch.optim as optim
-from sophgo_mq.prepare_by_platform1 import prepare_by_platform
-from sophgo_mq.utils.state import enable_calibration, enable_quantization, disable_all,enable_only_observer
+from tt_mq.prepare_by_platform1 import prepare_by_platform
+from tt_mq.utils.state import enable_calibration, enable_quantization, disable_all,enable_only_observer
 from transformers import logging
-import torch.onnx 
-from sophgo_mq.utils.logger import logger
+import torch.onnx
+from tt_mq.utils.logger import logger
 import os
 import collections
 import torch.nn.functional as F
@@ -50,13 +50,13 @@ from transformers import BertTokenizer, BertModel
 from transformers.utils.fx import HFTracer
 from deepspeed.module_inject import HFBertLayerPolicy
 import deepspeed
-from sophgo_mq.fake_quantize import global_var
+from tt_mq.fake_quantize import global_var
 import copy
 import ipdb
-from sophgo_mq.fake_quantize import global_var
-parser = argparse.ArgumentParser(description='sophgo_mq LLM')
+from tt_mq.fake_quantize import global_var
+parser = argparse.ArgumentParser(description='tt_mq LLM')
 
-parser.add_argument('--epochs', default=1, type=int, metavar='N', 
+parser.add_argument('--epochs', default=1, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('--b', '--batch-size', default=1, type=int,
                     metavar='N',
@@ -77,10 +77,10 @@ parser.add_argument('--aob', default='MinMaxObserver', type=str,
 parser.add_argument('--wfq', default='FixedFakeQuantize', type=str,
                     metavar='wfq', help='weight fakequantize')
 parser.add_argument('--afq', default='FixedFakeQuantize', type=str,
-                    metavar='afq', help='active fakequantize')  
+                    metavar='afq', help='active fakequantize')
 #train
 def train(model,epochs,optimizer,scheduler,train_dataloader,validation_dataloader,total_steps):
-    
+
     total_t0 = time.time()
     progress_bar = tqdm(range(total_steps))
     training_stats = []
@@ -98,7 +98,7 @@ def train(model,epochs,optimizer,scheduler,train_dataloader,validation_dataloade
             b_labels = torch.tensor(batch['input_ids']).to(device)
             b_masks = torch.tensor(batch['attention_mask']).to(device)
             shift_attentions = b_masks[:, 1:].contiguous()
-            model.zero_grad()        
+            model.zero_grad()
             outputs = model(input_ids=b_input_ids,
                             attention_mask = b_masks)
             logits = outputs['logits']
@@ -117,7 +117,7 @@ def train(model,epochs,optimizer,scheduler,train_dataloader,validation_dataloade
             progress_bar.update(1)
             count+=1
         # Calculate the average loss over all of the batches.
-        avg_train_loss = total_train_loss /count #len(train_dataloader) 
+        avg_train_loss = total_train_loss /count #len(train_dataloader)
         # Measure how long this epoch took.
         training_time = format_time(time.time() - t0)
         print("")
@@ -132,23 +132,23 @@ def train(model,epochs,optimizer,scheduler,train_dataloader,validation_dataloade
         nb_eval_steps = 0
 
         # Evaluate data for one epoch
-        for batch in validation_dataloader: 
+        for batch in validation_dataloader:
             b_input_ids = torch.tensor(batch['input_ids']).to(device)
             b_labels = torch.tensor(batch['input_ids']).to(device)
-            b_masks = torch.tensor(batch['attention_mask']).to(device)       
+            b_masks = torch.tensor(batch['attention_mask']).to(device)
             with torch.no_grad():
-                outputs  = model(b_input_ids, 
-    #                            token_type_ids=None, 
+                outputs  = model(b_input_ids,
+    #                            token_type_ids=None,
                                  attention_mask = b_masks)
                 logits = outputs['logits']
                 shift_logits = logits[..., :-1, :].contiguous()
                 shift_labels = b_labels[..., 1:].contiguous()
                 loss_fct =nn.CrossEntropyLoss()
-                loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))              
+                loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
             batch_loss = loss.item()
-            total_eval_loss += batch_loss        
+            total_eval_loss += batch_loss
         avg_val_loss = total_eval_loss / len(validation_dataloader)
-        validation_time = format_time(time.time() - t0)    
+        validation_time = format_time(time.time() - t0)
         print("  Validation Loss: {0:.2f}".format(avg_val_loss))
         print("  Validation took: {:}".format(validation_time))
         # Record all statistics from this epoch.
@@ -180,7 +180,7 @@ def insert_model_info(model, valid_layers=(torch.nn.Conv2d, torch.nn.Linear, tra
                 upper_layer = model
                 for l in layer_names:
                     upper_layer = getattr(upper_layer, l)
-                
+
                 if isinstance(upper_layer, valid_layers):
                     print('>'*8, 'Insert', layer_name, type(upper_layer))
                     def get_inp_out(layer_name):
@@ -224,11 +224,11 @@ def remove_model_info(model, valid_layers=(torch.nn.Conv2d, torch.nn.Linear, tra
                 upper_layer = model
                 for l in layer_names:
                     upper_layer = getattr(upper_layer, l)
-                
+
                 if isinstance(upper_layer, valid_layers):
                     if hasattr(upper_layer.weight_fake_quant, 'layer_module'):
                         layer_modules.append(upper_layer.weight_fake_quant)
-                
+
                 #     print('>'*8, 'Remove', layer_name, type(upper_layer))
                 #     inp_out_hooks[name].remove()
             # else:
@@ -256,7 +256,7 @@ def cal_ppl(model,test_dataloader):
             shift_labels = b_input_ids[:, 1:].contiguous()
             shift_attentions = b_masks[:, 1:].contiguous()
             # Flatten the tokens
-            loss_fct = CrossEntropyLoss(ignore_index=0, reduction="none")          
+            loss_fct = CrossEntropyLoss(ignore_index=0, reduction="none")
             loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1)).detach().reshape(bs, -1)
             for i in range(loss.shape[0]):
                 if shift_attentions.sum(1)[i]==0:
@@ -291,7 +291,7 @@ def cal_ppl_1(model,test_dataloader):
             shift_attentions = b_masks[:, 1:].contiguous()
             # Flatten the tokens
             loss_fct = CrossEntropyLoss(ignore_index=0, reduction="none")
-            #ipdb.set_trace()            
+            #ipdb.set_trace()
             loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1)).detach().reshape(bs, -1)
             for i in range(loss.shape[0]):
                 if shift_attentions.sum(1)[i]==0:
@@ -326,13 +326,13 @@ def cal_ppl_2(model,test_dataloader):
             shift_attentions = b_masks[:, 1:].contiguous()
             # Flatten the tokens
             loss_fct = CrossEntropyLoss(ignore_index=0, reduction="none")
-            #ipdb.set_trace()            
+            #ipdb.set_trace()
             loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1)).detach().reshape(bs, -1)
             for i in range(loss.shape[0]):
                 if shift_attentions.sum(1)[i]==0:
                     continue
                 else:
-                    batch_loss=loss[i,:shift_attentions.sum(1)[i]].sum() 
+                    batch_loss=loss[i,:shift_attentions.sum(1)[i]].sum()
                     total_loss+=batch_loss
                     total_loss=total_loss.to(torch.float32)
                     count+=shift_attentions.sum(1)[i]
@@ -393,7 +393,7 @@ wikitext_cali = datasets.Dataset.from_dict(random_samples_dict)
 
 #load tokenizer
 tokenizer = AutoTokenizer.from_pretrained(checkpoint,pad_token="<|pad|>",padding_side="right")
-tokenizer.add_special_tokens({"pad_token": "<|pad|>"}) 
+tokenizer.add_special_tokens({"pad_token": "<|pad|>"})
 #Building dataset
 tokenized_train = wikitext_train.map(preprocess_function, batched=True, remove_columns=wikitext_train.column_names)
 tokenized_validation = wikitext_validation.map(preprocess_function, batched=True, remove_columns=wikitext_validation.column_names)
@@ -403,26 +403,26 @@ data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 #dataloader
 train_dataloader = DataLoader(
             tokenized_train,  # The training samples.
-            shuffle=True, 
+            shuffle=True,
             batch_size = batch_size, # Trains with this batch size.
             collate_fn=data_collator
         )
 
 validation_dataloader = DataLoader(
             tokenized_validation, # The validation samples.
-            shuffle=False,  
+            shuffle=False,
             batch_size = 10, # Evaluate with this batch size.
             collate_fn=data_collator
         )
 cali_loader = DataLoader(
-            tokenized_cali, 
-            shuffle=False, 
+            tokenized_cali,
+            shuffle=False,
             batch_size = 2,
             collate_fn=data_collator
         )
 test_dataloader = DataLoader(
-            tokenized_test, 
-            shuffle=False, 
+            tokenized_test,
+            shuffle=False,
             batch_size = batch_size,
             collate_fn=data_collator
         )
@@ -444,8 +444,8 @@ torch.cuda.manual_seed_all(seed_val)
 #                 )
 # total_steps = len(train_dataloader) * epochs
 
-# scheduler = get_linear_schedule_with_warmup(optimizer, 
-#                                             num_warmup_steps = warmup_steps, 
+# scheduler = get_linear_schedule_with_warmup(optimizer,
+#                                             num_warmup_steps = warmup_steps,
 #                                             num_training_steps = total_steps)
 # #原始模型训练
 # model=model.train()
@@ -458,7 +458,7 @@ torch.cuda.manual_seed_all(seed_val)
 # # Display the table.
 # print(df_stats1)
 
-#quantize 
+#quantize
 sig = inspect.signature(model.forward)
 input_names =['input_ids','attention_mask']
 concrete_args = {p.name: p.default for p in sig.parameters.values() if p.name not in input_names}
@@ -520,7 +520,7 @@ class Quantizemodel(nn.Module):
         super().__init__()
         self.model = model_prepared
         self.config= model_prepared.config
-        
+
     def forward(self, input_ids,attention_mask,labels=None):
         labels=input_ids
         bs, sl = input_ids.size()

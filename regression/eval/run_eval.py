@@ -110,7 +110,7 @@ if __name__ == "__main__":
       model_path_str = f'model_path={str2}\n'
       model_path_exist = False
       if model.endswith('_qat'):
-        str1 = os.path.join(pytorch_arch_name, f'{pytorch_arch_name}_mqmoble_cali_table_from_mqbench_sophgo_tpu')
+        str1 = os.path.join(pytorch_arch_name, f'{pytorch_arch_name}_mqmoble_cali_table_from_mqbench_xx_tpu')
         str2 = os.path.join(qat_model_path, str1)
         specified_cali_table_str = f'specified_cali_table={str2}\n'
         specified_cali_table_exist = False

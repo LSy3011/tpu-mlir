@@ -458,11 +458,11 @@ DECL_EXPORT void bmlib_log(const char *tag, int level, const char *fmt, ...);
 /*******************handle releated functions *********************************/
 /**
  * @name    bm_dev_getcount
- * @brief   To get the number of sophon devices in system.
+ * @brief   To get the number of xx devices in system.
  *          If N is got, valid devid is [0, N-1]
  * @ingroup bmlib_runtime
  *
- * @param [out] count  The result number of sophon devices
+ * @param [out] count  The result number of xx devices
  * @retval  BM_SUCCESS  Succeeds.
  *          Other code  Fails.
  */

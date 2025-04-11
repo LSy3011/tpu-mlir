@@ -1,10 +1,10 @@
 import torch
 import unittest
 
-from sophgo_mq.prepare_by_platform import prepare_by_platform, BackendType
-from sophgo_mq.convert_deploy import convert_merge_bn
-from sophgo_mq.utils.state import enable_calibration, enable_quantization
-from sophgo_mq.utils.profiling import profiling
+from tt_mq.prepare_by_platform import prepare_by_platform, BackendType
+from tt_mq.convert_deploy import convert_merge_bn
+from tt_mq.utils.state import enable_calibration, enable_quantization
+from tt_mq.utils.profiling import profiling
 
 from ..version import GITHUB_RES
 

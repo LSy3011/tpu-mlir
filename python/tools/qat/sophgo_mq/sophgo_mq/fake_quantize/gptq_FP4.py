@@ -2,9 +2,9 @@ import torch
 from torch.nn.parameter import Parameter
 from torch.quantization.observer import MovingAverageMinMaxObserver
 
-from sophgo_mq.fake_quantize.quantize_base import QuantizeBase, _version_under_1100 
-from sophgo_mq.utils.hook import PerChannelLoadHook
-from sophgo_mq.fake_quantize import global_var
+from tt_mq.fake_quantize.quantize_base import QuantizeBase, _version_under_1100
+from tt_mq.utils.hook import PerChannelLoadHook
+from tt_mq.fake_quantize import global_var
 
 import transformers
 import math
@@ -13,7 +13,7 @@ import numpy as np
 import ipdb
 from scipy.stats import norm
 
-DEBUG = False 
+DEBUG = False
 
 NF4 = [
     -1.0,
@@ -46,7 +46,7 @@ FP4_E2M1_BIT = [-1, -2, -3, -4, -5, -6, -7, 0, 1, 2, 3, 4, 5, 6, 7]
 
 FLOAT_MAPPING = {"nf4": NF4, "fp4": FP4_BNB, "fp4_e2m1_bnb": FP4_BNB, "fp4_e2m1": FP4_E2M1}
 INT_MAPPING = {"nf4": NF4_BIT, "fp4": FP4_BNB_BIT, "fp4_e2m1_bnb": FP4_BNB_BIT, "fp4_e2m1": FP4_E2M1_BIT}
-    
+
 def quantize(x, scale, zero, maxq):
     if maxq < 0:
         return (x > scale / 2).float() * scale + (x < zero / 2).float() * zero
@@ -55,7 +55,7 @@ def quantize(x, scale, zero, maxq):
 
 class GPTQFP4FakeQuantize(QuantizeBase):
     '''
-    This is gptq method sophgo_mq version.
+    This is gptq method tt_mq version.
     '''
 
     def __init__(self, observer, **observer_kwargs):
@@ -137,7 +137,7 @@ class GPTQFP4FakeQuantize(QuantizeBase):
             #     X, self.scale.item(), int(self.zero_point.item()),
             #     self.quant_min, self.quant_max)
         return X
-    
+
     @torch.jit.export
     def extra_repr(self):
         return 'fake_quant_enabled={}, observer_enabled={}, ' \
@@ -246,7 +246,7 @@ class GPTQFP4FakeQuantize(QuantizeBase):
         Losses = torch.zeros_like(W)
         Q = torch.zeros_like(W)
 
-        
+
         damp = percdamp * torch.mean(H_diag)
         diag = torch.arange(self.columns, device=self.dev)
         H[diag, diag] += damp # 使 H 转变为全正数，保证正定
@@ -320,9 +320,9 @@ class GPTQFP4FakeQuantize(QuantizeBase):
         # if ('Linear' in self.layer_type):
         # print(torch.sum((self.layer_module(self.input) - self.output) ** 2))
         # del self.layer_module
-        
+
         return W
-    
+
     def fasterquant1(self, X, blocksize=128, percdamp=.01, groupsize=-1, actorder=False):
         # W = self.layer.weight.data.clone()
         # if isinstance(self.layer,torch.nn.Conv2d):
@@ -362,7 +362,7 @@ class GPTQFP4FakeQuantize(QuantizeBase):
         Losses = torch.zeros_like(W)
         Q = torch.zeros_like(W)
 
-        
+
         damp = percdamp * torch.mean(H_diag)
         diag = torch.arange(self.columns, device=self.dev)
         H[diag, diag] += damp # 使 H 转变为全正数，保证正定
@@ -437,5 +437,5 @@ class GPTQFP4FakeQuantize(QuantizeBase):
         # if ('Linear' in self.layer_type):
         # print(torch.sum((self.layer_module(self.input) - self.output) ** 2))
         # del self.layer_module
-        
+
         return W

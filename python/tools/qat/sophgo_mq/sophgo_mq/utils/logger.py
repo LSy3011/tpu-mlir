@@ -2,8 +2,8 @@ import logging
 import sys
 
 
-SOPHGO_MQ_LOGGER_NAME = "SOPHGO_MQ"
-logger = logging.getLogger(SOPHGO_MQ_LOGGER_NAME)
+tt_mq_LOGGER_NAME = "tt_mq"
+logger = logging.getLogger(tt_mq_LOGGER_NAME)
 logger.propagate = False
 stdout_handler = logging.StreamHandler(sys.stdout)
 fmt = logging.Formatter("[%(name)s] %(levelname)s: %(message)s")

@@ -1,10 +1,10 @@
 import torch
 import math
 
-from sophgo_mq.fake_quantize.quantize_base import QuantizeBase
-from sophgo_mq.utils.hook import PerChannelLoadHook
+from tt_mq.fake_quantize.quantize_base import QuantizeBase
+from tt_mq.utils.hook import PerChannelLoadHook
 
-from sophgo_mq.fake_quantize.quantize_base import _version_under_1100
+from tt_mq.fake_quantize.quantize_base import _version_under_1100
 import ipdb
 from scipy.stats import norm
 """双量化，采用4bit group量化的同时，将scale量化为fp8(e4m3)
@@ -27,21 +27,21 @@ NF4 = [
     0.7229568362236023,
     1.0,
 ]
-AF4=[-1.0, 
-     -0.69441008, 
+AF4=[-1.0,
+     -0.69441008,
      -0.51243739,
-      -0.3736951, 
-     -0.25607552, 
+      -0.3736951,
+     -0.25607552,
      -0.14982478,
-     -0.04934812,  
-     0.0, 
-     0.04273164, 
-     0.12934483, 
-     0.21961274, 
+     -0.04934812,
+     0.0,
+     0.04273164,
+     0.12934483,
+     0.21961274,
      0.31675666,
-     0.42563882,  
-     0.55496234,  
-     0.72424863,  
+     0.42563882,
+     0.55496234,
+     0.72424863,
      1.0,
 ]
 FP4_BNB = [-12.0, -8.0, -6.0, -4.0, -3.0, -2.0, -0.0625, 0, 0.0625, 2.0, 3.0, 4.0, 6.0, 8.0, 12.0]
@@ -72,7 +72,7 @@ def get_flt_max(mode):
         return float(57344.0) # E5M2所能表示的最大值
     elif mode.lower() == "e4m3":
         return float(448.0) # E4M3所能表示的最大值
-    
+
 # 写一个获取FP8量化所能表示的最小值函数：
 def get_flt_min(mode):
     if mode.lower() =="e5m2":
@@ -85,7 +85,7 @@ def quantize_to_integer(tensor, mode, inplace=False):
     # compute tensor min and max values
     min_val = torch.min(tensor)
     max_val = torch.max(tensor)
-    # int8 quantization range 
+    # int8 quantization range
 
     nbits = int(mode.split("INT")[1])-1
     q_min = -1*2**nbits
@@ -98,7 +98,7 @@ def quantize_to_integer(tensor, mode, inplace=False):
         q_min = -8
         q_max = 7
     """
-    # compute scale and zero_point 
+    # compute scale and zero_point
     scale = (max_val - min_val) / (q_max - q_min)
     zero_point = q_min - (min_val / scale)
     # Quantize the input tensor using int8 representation
@@ -111,7 +111,7 @@ def quantize_to_integer(tensor, mode, inplace=False):
     if inplace is True:
         tensor.data.copy_(dqtensor)
         return tensor
-    
+
     return dqtensor
 
 #调用emulator函数计算量化后的权重：
@@ -163,14 +163,14 @@ class FP4GROUPFakeQuantize1(QuantizeBase):
             Xs=X.shape[1]
             X= X.reshape((-1, self.group_size))
             _scale = X.abs().max(1)[0] * self.quantile/ max(allow_data)
-            
+
             #scale quantize
             scalemax = torch.max(abs(torch.flatten(_scale.detach()))) #求出_scale的max
             _scale1 = get_flt_max("e4m3") / scalemax
             _scale1 = torch.tensor(6.55e+04) if _scale1.item() > 3.275e+04 else _scale1
             _scale1 = _scale1.to(self.scale.device)
             _scale = fpemu_device_fn(_scale, mode=work_mode, inplace=False, scale=_scale1) #返回per tensor方式计算的量化权重
-            
+
             _scale.unsqueeze_(dim=-1)
             X = X/_scale
             # if self.data_type.lower=="nf4":
@@ -197,13 +197,13 @@ class FP4GROUPFakeQuantize1(QuantizeBase):
 
     @torch.jit.export
     def extra_repr(self):
-        allow_data = FLOAT_MAPPING[self.data_type] 
+        allow_data = FLOAT_MAPPING[self.data_type]
         return 'fake_quant_enabled={}, observer_enabled={}, ' \
                'quant_min={}, quant_max={}, dtype={}, qscheme={}, ch_axis={}, ' \
                'scale={}, zero_point={}'.format(
                    self.fake_quant_enabled, self.observer_enabled,
                    min(allow_data), max(allow_data),
-                   self.dtype, self.qscheme, self.ch_axis, self.scale if self.ch_axis == -1 else 'List', 
+                   self.dtype, self.qscheme, self.ch_axis, self.scale if self.ch_axis == -1 else 'List',
                    self.zero_point if self.ch_axis == -1 else 'List')
 
     def _save_to_state_dict(self, destination, prefix, keep_vars):

@@ -28,12 +28,12 @@ from torch.quantization.quantize_fx import (
     _fuse_fx
 )
 
-from sophgo_mq.utils import get_flattened_qconfig_dict
-from sophgo_mq.utils import getitem2node
-from sophgo_mq.utils.logger import logger
-from sophgo_mq.utils.registry import register_model_quantizer
-import sophgo_mq.nn.intrinsic.qat as qnniqat
-import sophgo_mq.nn.qat as qnnqat
+from tt_mq.utils import get_flattened_qconfig_dict
+from tt_mq.utils import getitem2node
+from tt_mq.utils.logger import logger
+from tt_mq.utils.registry import register_model_quantizer
+import tt_mq.nn.intrinsic.qat as qnniqat
+import tt_mq.nn.qat as qnnqat
 
 class ModelQuantizer(object):
     """General model quantizer class.
@@ -66,14 +66,14 @@ class ModelQuantizer(object):
         if self.quantmode=="weight_activation":
             model = self._insert_fake_quantize_for_act_quant(model, qconfig)
         return model
-    
+
     def prepare_swint(self, model: GraphModule, qconfig):
         model = _fuse_fx(model, self.extra_fuse_dict)
         model = self._weight_quant(model, qconfig)
         if self.quantmode=="weight_activation":
             model = self._insert_fake_quantize_for_act_quant_swint(model, qconfig)
-        return model    
-    
+        return model
+
     def _insert_fake_quantize_for_act_quant_swint(
             self,
             model: GraphModule,
@@ -87,7 +87,7 @@ class ModelQuantizer(object):
         qconfig2 = {}
 
         if 'module_name' in qconfig:
-            qconfig2 = qconfig['module_name']    
+            qconfig2 = qconfig['module_name']
         for node in node_to_quantize_output:
             quantizer_name = node.name + quantizer_prefix
             if quantizer_name in qconfig2:
@@ -103,7 +103,7 @@ class ModelQuantizer(object):
         model.recompile()
         model.graph.lint()
         return model
-    
+
     def _find_act_quants_swint(self, model: GraphModule, qconfig) -> List:
         nodes = list(model.graph.nodes)
         modules = dict(model.named_modules())
@@ -328,7 +328,7 @@ class ModelQuantizer(object):
                         continue
                     if _node.op == 'call_function' and 'getitem' in _node.name:
                         if _node.args[0].target=="size":
-                            continue   
+                            continue
                     if self._is_implicit_merge(modules, (node, _node)):
                         logger.info("Implicit merge: {} + {}".format(_node.name, node.name))
                         continue

@@ -1,4 +1,4 @@
-# Sophgo-mq Example with ImageNet
+# xx-mq Example with ImageNet
 
 We follow the Huggingface [official example](https://github.com/huggingface/transformers/blob/main/examples/pytorch/image-classification) to build the example of Model Quantization Benchmark for image classification task.
 
@@ -16,9 +16,9 @@ We follow the Huggingface [official example](https://github.com/huggingface/tran
   ```
 - **Post Training Quantization:**
   We support PTQ of ViT for image-classification now.
-  You can modify the config in "config.yaml". And an example quantization config is as follows. 
+  You can modify the config in "config.yaml". And an example quantization config is as follows.
   ```
-  quant: 
+  quant:
     a_qconfig:
         quantizer: FixedFakeQuantize
         observer: EMAMSEObserver
@@ -35,10 +35,10 @@ We follow the Huggingface [official example](https://github.com/huggingface/tran
     backend: academic
   ```
   You need to prepare the finetuned FP32 model of the specific task and change the "model_name_or_path" in "config.yaml".
-  
+
   Steps:
     ```
-    git clone https://github.com/sophgo/sophgo-mq.git
+    git clone https://github.com/xxx/xx-mq.git
     cd application/vit_example
     sh run.sh
     ```

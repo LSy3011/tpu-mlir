@@ -5,10 +5,10 @@ import argparse
 import unittest
 import datetime
 import time
-import copy 
+import copy
 import ipdb
 import transformers
-import torch.onnx 
+import torch.onnx
 import logging
 import os
 import collections
@@ -34,9 +34,9 @@ from transformers import default_data_collator
 from transformers.onnx.features import FeaturesManager
 from datasets import load_dataset,load_metric
 import torch.optim as optim
-from sophgo_mq.convert_deploy import convert_deploy, convert_onnx
-from sophgo_mq.prepare_by_platform import prepare_by_platform, BackendType
-from sophgo_mq.utils.state import enable_calibration, enable_quantization, disable_all
+from tt_mq.convert_deploy import convert_deploy, convert_onnx
+from tt_mq.prepare_by_platform import prepare_by_platform, BackendType
+from tt_mq.utils.state import enable_calibration, enable_quantization, disable_all
 from transformers import logging
 from torch.nn import CrossEntropyLoss
 from torch.nn.parallel import DataParallel
@@ -63,7 +63,7 @@ def cleaning(text,punct):
         no_punct=punct,                 # remove punctuations
         lang="en"                       # set to 'de' for German special handling
     )
-    
+
     tokens = word_tokenize(cleaned_text)
     filtered_sentence = [w for w in tokens if not w in stopwords.words('english')]
     cleaned_text_0 = ' '.join(filtered_sentence)
@@ -82,7 +82,7 @@ def train(model,epochs,traindataset,validation_dataloader):
         for step, batch in enumerate(trainloader):
             b_input_ids = batch[0].to(model_engine.local_rank)
             b_labels = batch[0].to(model_engine.local_rank)
-            b_masks = batch[1].to(model_engine.local_rank)       
+            b_masks = batch[1].to(model_engine.local_rank)
             outputs = model_engine(b_input_ids,
                             attention_mask = b_masks,
                             labels=b_labels
@@ -103,20 +103,20 @@ def train(model,epochs,traindataset,validation_dataloader):
         # Evaluate data for one epoch
         running_loss1 = 0.0
         with torch.no_grad():
-            for batch in validation_dataloader: 
+            for batch in validation_dataloader:
                 b_input_ids = batch[0].to(model_engine.local_rank)
                 b_labels = batch[0].to(model_engine.local_rank)
-                b_masks = batch[1].to(model_engine.local_rank)       
-                outputs  = model_engine(b_input_ids, 
-    #                            token_type_ids=None, 
+                b_masks = batch[1].to(model_engine.local_rank)
+                outputs  = model_engine(b_input_ids,
+    #                            token_type_ids=None,
                                 attention_mask = b_masks,
                                 labels=b_labels)
                 loss = outputs[0]
                 running_loss1+=loss.item()
-            print("GPUs:%d:epoch:%d,loss:%.3f,device:%d\n"%(torch.cuda.device_count(),epoch_i,running_loss1/len(validation_dataloader),model_engine.local_rank))              
-        validation_time = format_time(time.time() - t0)    
+            print("GPUs:%d:epoch:%d,loss:%.3f,device:%d\n"%(torch.cuda.device_count(),epoch_i,running_loss1/len(validation_dataloader),model_engine.local_rank))
+        validation_time = format_time(time.time() - t0)
         # Record all statistics from this epoch.
-        
+
     print("")
     print("Training complete!")
     print("Total training took {:} (h:mm:ss)".format(format_time(time.time()-total_t0)))
@@ -133,7 +133,7 @@ def train1(model_engine,epochs,trainloader,validation_dataloader):
         for step, batch in enumerate(trainloader):
             b_input_ids = batch[0].to(model_engine.local_rank)
             b_labels = batch[0].to(model_engine.local_rank)
-            b_masks = batch[1].to(model_engine.local_rank)       
+            b_masks = batch[1].to(model_engine.local_rank)
             outputs = model_engine(b_input_ids,
                             attention_mask = b_masks,
                             labels=b_labels
@@ -153,20 +153,20 @@ def train1(model_engine,epochs,trainloader,validation_dataloader):
         # Evaluate data for one epoch
         running_loss1 = 0.0
         with torch.no_grad():
-            for batch in validation_dataloader: 
+            for batch in validation_dataloader:
                 b_input_ids = batch[0].to(model_engine.local_rank)
                 b_labels = batch[0].to(model_engine.local_rank)
-                b_masks = batch[1].to(model_engine.local_rank)       
-                outputs  = model_engine(b_input_ids, 
-    #                            token_type_ids=None, 
+                b_masks = batch[1].to(model_engine.local_rank)
+                outputs  = model_engine(b_input_ids,
+    #                            token_type_ids=None,
                                 attention_mask = b_masks,
                                 labels=b_labels)
-                loss = outputs[0] 
-                running_loss1+=loss.item() 
-            print("GPUs:%d:epoch:%d,loss:%.3f,device:%d\n"%(torch.cuda.device_count(),epoch_i,running_loss1/len(validation_dataloader),model_engine.local_rank))              
-        validation_time = format_time(time.time() - t0)    
+                loss = outputs[0]
+                running_loss1+=loss.item()
+            print("GPUs:%d:epoch:%d,loss:%.3f,device:%d\n"%(torch.cuda.device_count(),epoch_i,running_loss1/len(validation_dataloader),model_engine.local_rank))
+        validation_time = format_time(time.time() - t0)
         # Record all statistics from this epoch.
-        
+
     print("")
     print("Training complete!")
     print("Total training took {:} (h:mm:ss)".format(format_time(time.time()-total_t0)))
@@ -223,14 +223,14 @@ class GPT2Dataset(Dataset):
             encodings_dict = tokenizer( '<|startoftext|>'+ txt + '<|endoftext|>', truncation=True, max_length=max_length,padding="max_length") #, padding="max_length"
             self.input_ids.append(torch.tensor(encodings_dict['input_ids']))
             self.attn_masks.append(torch.tensor(encodings_dict['attention_mask']))
-    
+
     def __len__(self):
         return len(self.input_ids)
 
     def __getitem__(self, idx):
-        return self.input_ids[idx], self.attn_masks[idx] 
+        return self.input_ids[idx], self.attn_masks[idx]
 def format_time(elapsed):
-    return str(datetime.timedelta(seconds=int(round((elapsed)))))     
+    return str(datetime.timedelta(seconds=int(round((elapsed)))))
 ###########################################################################################
 def main(args):
     #load data
@@ -272,17 +272,17 @@ def main(args):
             batch_size = 2 # Evaluate with this batch size.
         )
     cali_loader = DataLoader(
-            cali_loader, 
+            cali_loader,
             sampler = SequentialSampler(cali_loader),
-            batch_size = args.b 
+            batch_size = args.b
         )
-    
+
     #导入模型
     configuration = GPT2Config.from_pretrained('gpt2',resid_pdrop = 0.3 , output_hidden_states=False)
     model = GPT2LMHeadModel.from_pretrained("gpt2", config=configuration)
     model.resize_token_embeddings(len(tokenizer))
     model=model.train()
-    #quantize 
+    #quantize
     sig = inspect.signature(model.forward)
     input_names =['input_ids','attention_mask']
     concrete_args = {p.name: p.default for p in sig.parameters.values() if p.name not in input_names}
@@ -320,9 +320,9 @@ def main(args):
         def __init__(self,config):
             super(Quantizegpt2, self).__init__(config)
             self.gpt2 = model_prepared
-            
+
         def forward(self, input_ids,attention_mask,labels=None):
-            
+
             gpt2_output= self.gpt2(input_ids=input_ids,attention_mask=attention_mask)
             lm_logits = gpt2_output['logits']
             loss = None
@@ -357,7 +357,7 @@ def main(args):
     print("量化模型PPL:{}".format(avg_ppl2))
 
 def add_argument():
-    parser = argparse.ArgumentParser(description='sophgo_mq gpt2 Training')
+    parser = argparse.ArgumentParser(description='tt_mq gpt2 Training')
 
     parser.add_argument('--epochs', default=1, type=int, metavar='N',
                         help='number of total epochs to run')
@@ -388,13 +388,13 @@ def add_argument():
     parser.add_argument('--wfq', default='LearnableFakeQuantize', type=str,
                         metavar='wfq', help='weight fakequantize')
     parser.add_argument('--afq', default='LearnableFakeQuantize', type=str,
-                        metavar='afq', help='active fakequantize') 
+                        metavar='afq', help='active fakequantize')
     parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()
-    return args 
+    return args
 
 if __name__ == '__main__':
-    
+
     args = add_argument()
     main(args)
 

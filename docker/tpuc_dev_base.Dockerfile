@@ -108,7 +108,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /root
 
 ARG CAFFE_VERSION="6b665ea602f602502121ca3dc84f58e801fcaa13"
-RUN git clone https://github.com/sophgo/caffe.git && \
+RUN git clone https://github.com/xx/caffe.git && \
     cd caffe && git checkout ${CAFFE_VERSION} && \
     mkdir -p build && cd build && \
     cmake -G Ninja .. \

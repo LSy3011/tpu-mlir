@@ -26,12 +26,12 @@ endif()
 
 install(TARGETS customcpuop
     LIBRARY DESTINATION lib
-    COMPONENT libsophon)
+    COMPONENT libxx)
 install(FILES
     include/bmcpu.h
     include/customap_common.h
     DESTINATION include
-    COMPONENT libsophon)
+    COMPONENT libxx)
 
 install(CODE "
     file(INSTALL ${CMAKE_CURRENT_BINARY_DIR}/libcustomapop.so

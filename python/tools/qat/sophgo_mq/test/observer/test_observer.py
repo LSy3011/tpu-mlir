@@ -1,9 +1,9 @@
 import torch
 import unittest
 
-from sophgo_mq.prepare_by_platform import prepare_by_platform, BackendType
-from sophgo_mq.convert_deploy import convert_deploy
-from sophgo_mq.utils.state import enable_calibration, enable_quantization
+from tt_mq.prepare_by_platform import prepare_by_platform, BackendType
+from tt_mq.convert_deploy import convert_deploy
+from tt_mq.utils.state import enable_calibration, enable_quantization
 
 from ..version import GITHUB_RES
 
@@ -80,7 +80,7 @@ class TestObserver(unittest.TestCase):
         enable_quantization(model_prepared)
         loss = model_prepared(dummy_input).sum()
         loss.backward()
-    
+
     def test_clip_std_observer(self):
         model_to_quantize = torch.hub.load(GITHUB_RES, 'resnet18', pretrained=False)
         dummy_input = torch.randn(2, 3, 224, 224, device='cpu')

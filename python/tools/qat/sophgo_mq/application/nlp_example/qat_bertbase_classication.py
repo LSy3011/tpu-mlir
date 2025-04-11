@@ -3,7 +3,7 @@ import torch.nn as nn
 import inspect
 import unittest
 import argparse
-import copy 
+import copy
 from itertools import chain
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
@@ -15,14 +15,14 @@ from transformers.utils.fx import HFTracer
 from transformers.onnx.features import FeaturesManager
 from datasets import load_dataset
 import torch.optim as optim
-from sophgo_mq.convert_deploy import convert_deploy, convert_onnx
-from sophgo_mq.prepare_by_platform import prepare_by_platform
-from sophgo_mq.utils.state import enable_calibration, enable_quantization, disable_all
+from tt_mq.convert_deploy import convert_deploy, convert_onnx
+from tt_mq.prepare_by_platform import prepare_by_platform
+from tt_mq.utils.state import enable_calibration, enable_quantization, disable_all
 from transformers import logging
 import matplotlib.pyplot as plt
-import torch.onnx 
+import torch.onnx
 
-parser = argparse.ArgumentParser(description='sophgo_mq bertbase Training')
+parser = argparse.ArgumentParser(description='tt_mq bertbase Training')
 
 parser.add_argument('--epochs', default=1, type=int, metavar='N',
                     help='number of total epochs to run')
@@ -45,12 +45,12 @@ parser.add_argument('--aob', default='EMAQuantileObserver', type=str,
 parser.add_argument('--wfq', default='AdaRoundFakeQuantize', type=str,
                     metavar='wfq', help='weight fakequantize')
 parser.add_argument('--afq', default='LearnableFakeQuantize', type=str,
-                    metavar='afq', help='active fakequantize')                                         
+                    metavar='afq', help='active fakequantize')
 
 class Dataset(torch.utils.data.Dataset):
     def __init__(self, data_type):
         self.data = self.load_data(data_type)
-    
+
     def load_data(self, data_type):
         tmp_dataset = load_dataset(path='laugustyniak/abusive-clauses-pl', split = data_type)
         Data = {}
@@ -71,9 +71,9 @@ def collote_fn(batch_samples):
         batch_text.append(sample['text'])
         batch_label.append(int(sample['label']))
     X = tokenizer(
-        batch_text, 
-        padding=True, 
-        truncation=True, 
+        batch_text,
+        padding=True,
+        truncation=True,
         return_tensors="pt"
     )
     y = torch.tensor(batch_label)
@@ -82,7 +82,7 @@ def train_loop(dataloader, model, loss_fn, optimizer, lr_scheduler, epoch, total
     progress_bar = tqdm(range(len(dataloader)))
     progress_bar.set_description(f'loss: {0:>7f}')
     finish_batch_num = (epoch-1)*len(dataloader)
-    
+
     model.train()
     for batch, (X, y) in enumerate(dataloader, start=1):
         X, y = X.to(device), y.to(device)
@@ -191,7 +191,7 @@ class NeuralNetwork2(nn.Module):
         super(NeuralNetwork2, self).__init__()
         self.bert_encoder = model_prepared
         self.classifier = nn.Linear(768, 2)
-    
+
     def forward(self, x):
         bert_output = self.bert_encoder(**x)
         cls_vectors = bert_output['last_hidden_state'][:, 0]

@@ -19,11 +19,11 @@ from transformers import (
 from transformers.utils.fx import HFTracer
 from transformers.onnx.features import FeaturesManager
 from itertools import chain
-from sophgo_mq.prepare_by_platform import prepare_by_platform, BackendType
-from sophgo_mq.convert_deploy import convert_deploy, convert_onnx
-from sophgo_mq.utils.state import enable_quantization, enable_calibration_woquantization, enable_calibration
+from tt_mq.prepare_by_platform import prepare_by_platform, BackendType
+from tt_mq.convert_deploy import convert_deploy, convert_onnx
+from tt_mq.utils.state import enable_quantization, enable_calibration_woquantization, enable_calibration
 import re
-from sophgo_mq.fake_quantize import global_var
+from tt_mq.fake_quantize import global_var
 import copy
 
 backends = {
@@ -96,7 +96,7 @@ def quantize_model(model, config_quant):
                 }
             }
     }
-    backend = backends[config_quant.backend] 
+    backend = backends[config_quant.backend]
     model = prepare_by_platform(model, backend, prepare_custom_config_dict, custom_tracer=HFTracer())
     return model
 
@@ -116,7 +116,7 @@ def insert_model_info(model, valid_layers=(torch.nn.Conv2d, torch.nn.Linear, tra
                 upper_layer = model
                 for l in layer_names:
                     upper_layer = getattr(upper_layer, l)
-                
+
                 if isinstance(upper_layer, valid_layers):
                     print('>'*8, 'Insert', layer_name, type(upper_layer))
                     def get_inp_out(layer_name):
@@ -157,13 +157,13 @@ def remove_model_info(model, valid_layers=(torch.nn.Conv2d, torch.nn.Linear, tra
                 upper_layer = model
                 for l in layer_names:
                     upper_layer = getattr(upper_layer, l)
-                
+
                 if isinstance(upper_layer, valid_layers):
                     if (getattr(upper_layer.weight_fake_quant, 'is_gptq_valid') == True):
                         setattr(upper_layer.weight_fake_quant, 'is_gptq_done', True)
                     if hasattr(upper_layer.weight_fake_quant, 'layer_module'):
                         layer_modules.append(upper_layer.weight_fake_quant)
-                
+
                 #     print('>'*8, 'Remove', layer_name, type(upper_layer))
                 #     inp_out_hooks[name].remove()
             # else:
@@ -220,10 +220,10 @@ def main(config_path):
     else:
         eval_datasets = raw_datasets['validation']
     metric = datasets.load_metric("glue", config.data.task_name)
-    
+
     if hasattr(config, 'quant'):
         model = quantize_model(model, config.quant)
-        print("sophgo_mq Model:")
+        print("tt_mq Model:")
         print(model)
 
     def compute_metrics(p: EvalPrediction):
@@ -234,7 +234,7 @@ def main(config_path):
         if len(result) > 1:
             result["combined_score"] = np.mean(list(result.values())).item()
         return result
-    
+
     # Data collator will default to DataCollatorWithPadding, so we change it if we already did the padding.
     if config.data.pad_to_max_length:
         data_collator = default_data_collator
@@ -310,7 +310,7 @@ def main(config_path):
         if hasattr(config, 'quant'):
             enable_quantization(trainer.model)
         evaluate(trainer, eval_datasets)
-    
+
     model_kind, model_onnx_config = FeaturesManager.check_supported_model_or_raise(model, feature='default')
     onnx_config = model_onnx_config(model.config)
     export_inputs = {}
@@ -320,23 +320,23 @@ def main(config_path):
     export_inputs['attention_mask'] = torch.tensor(eval_datasets[0]['attention_mask']).unsqueeze(0).to(torch.device('cpu'))
 
     model = model.to(torch.device('cpu'))
-    for tensor in model.state_dict(): 
-        if (model.state_dict()[tensor].device.type != 'cpu'): 
+    for tensor in model.state_dict():
+        if (model.state_dict()[tensor].device.type != 'cpu'):
             print('*'*10, 'not same device', tensor)
 
     # kwargs = {
     #     'input_shape_dict': {'input_ids': [1, 128], 'token_type_ids': [1, 128], 'attention_mask': [1, 128]},
     #     'output_path': './',
-    #     'model_name':  'sophgo_mq_model_gptq',
-    #     'dummy_input': export_inputs, 
-    #     'onnx_model_path':  './sophgo_mq_model_gptq.onnx',
+    #     'model_name':  'tt_mq_model_gptq',
+    #     'dummy_input': export_inputs,
+    #     'onnx_model_path':  './tt_mq_model_gptq.onnx',
     # }
     # convert_onnx(model, **kwargs)
 
     convert_deploy(model,
                 backends[config.quant.backend],
                 dummy_input=(export_inputs,),
-                model_name='sophgo_mq_model_gptq',
+                model_name='tt_mq_model_gptq',
                 input_names=list(onnx_config.inputs.keys()),
                 output_names=list(onnx_config.outputs.keys()),
                 dynamic_axes={name: axes for name, axes in chain(onnx_config.inputs.items(), onnx_config.outputs.items())}
@@ -349,6 +349,6 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='configuration',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--config', default='/home/zhang/Projects/quantization/sophgo_mq/application/nlp_example/config-gptq.yaml', type=str)
+    parser.add_argument('--config', default='/home/zhang/Projects/quantization/tt_mq/application/nlp_example/config-gptq.yaml', type=str)
     args = parser.parse_args()
     main(args.config)

@@ -2,11 +2,11 @@ from typing import List, Tuple
 
 from torch.nn import Module
 
-from sophgo_mq.mix_precision.hessian_per_layer import hessian_per_layer
-from sophgo_mq.prepare_by_platform import BackendType, prepare_by_platform
-from sophgo_mq.utils import is_symmetric_quant
-from sophgo_mq.utils.logger import logger
-from sophgo_mq.utils.state import disable_all
+from tt_mq.mix_precision.hessian_per_layer import hessian_per_layer
+from tt_mq.prepare_by_platform import BackendType, prepare_by_platform
+from tt_mq.utils import is_symmetric_quant
+from tt_mq.utils.logger import logger
+from tt_mq.utils.state import disable_all
 
 
 def mixprecision_profiling(model: Module, quantized_model: Module, bitwidth_list: List, data: Tuple, criterion, algo='naive'):
@@ -253,7 +253,7 @@ if __name__ == '__main__':
     trace_sensetive_dict = mixprecision_profiling(model, quantized_model, test_bitwidth_list,
                                                   data=(inputs, targets), criterion=torch.nn.CrossEntropyLoss(), algo='hawq_trace')
 
-    mixprecision_bit_selection(test_bitwidth_list, 
+    mixprecision_bit_selection(test_bitwidth_list,
                                # naive_sensetive_dict,
                                # maxeigen_sensetive_dict,
                                trace_sensetive_dict,

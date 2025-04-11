@@ -9,12 +9,12 @@ from torch.nn.intrinsic import _FusedModule
 from torch.nn.parameter import Parameter
 from torch.nn.modules.utils import _pair
 
-from typing import TypeVar 
+from typing import TypeVar
 
 
-import sophgo_mq.nn.qat as qnnqat
+import tt_mq.nn.qat as qnnqat
 import torch.nn.qat.modules as nnqat
-# from sophgo_mq.quantization.default_bias_fake_quant import bias_fake_quantizer
+# from tt_mq.quantization.default_bias_fake_quant import bias_fake_quantizer
 
 _BN_CLASS_MAP = {
     1: nn.BatchNorm1d,
@@ -110,14 +110,14 @@ class _ConvBnNd(nn.modules.conv._ConvNd, _FusedModule):
 #         # will be added later
 #         if self.bias is not None:
 #             zero_bias = torch.zeros_like(self.bias)
-#             conv_bias = self.bias 
+#             conv_bias = self.bias
 #         else:
 #             zero_bias = torch.zeros(self.out_channels, device=scaled_weight.device)
 #             conv_bias = torch.zeros_like(zero_bias, device=scaled_weight.device)
 #         if self.bn.affine:
-#             full_bias = (conv_bias - self.bn.running_mean) / running_std * self.bn.weight + self.bn.bias 
+#             full_bias = (conv_bias - self.bn.running_mean) / running_std * self.bn.weight + self.bn.bias
 #         else:
-#             full_bias = (conv_bias - self.bn.running_mean) / running_std 
+#             full_bias = (conv_bias - self.bn.running_mean) / running_std
 #         quant_bias = self.bias_fake_quant(full_bias)
 #         conv_with_bias = self._conv_forward(input, scaled_weight, quant_bias)
 #         conv_orig = (conv_with_bias - full_bias.reshape(bias_shape)) / scale_factor.reshape(bias_shape) + conv_bias.reshape(bias_shape)
@@ -186,14 +186,14 @@ class _ConvBnNd(nn.modules.conv._ConvNd, _FusedModule):
         # will be added later
         if self.bias is not None:
             zero_bias = torch.zeros_like(self.bias)
-            conv_bias = self.bias 
+            conv_bias = self.bias
         else:
             zero_bias = torch.zeros(self.out_channels, device=scaled_weight.device)
             conv_bias = torch.zeros_like(zero_bias, device=scaled_weight.device)
         if self.bn.affine:
-            full_bias = (conv_bias - self.bn.running_mean) / running_std * self.bn.weight + self.bn.bias 
+            full_bias = (conv_bias - self.bn.running_mean) / running_std * self.bn.weight + self.bn.bias
         else:
-            full_bias = (conv_bias - self.bn.running_mean) / running_std 
+            full_bias = (conv_bias - self.bn.running_mean) / running_std
 
         if full_bias is not None and self.weight_fake_quant.fake_quant_enabled[0] == 1:
             quant_bias = self.bias_fake_quant_proc(full_bias, self.weight_fake_quant.scale, self.input_fake_quantizer.scale)
@@ -349,7 +349,7 @@ class _ConvBnNd(nn.modules.conv._ConvNd, _FusedModule):
 
 
 
-class ConvBn2d_sophgo(_ConvBnNd, nn.Conv2d):
+class ConvBn2d_xx(_ConvBnNd, nn.Conv2d):
     r"""
     A ConvBn2d module is a module fused from Conv2d and BatchNorm2d,
     attached with FakeQuantize modules for weight,
@@ -393,7 +393,7 @@ class ConvBn2d_sophgo(_ConvBnNd, nn.Conv2d):
                            padding, dilation, False, _pair(0), groups, bias, padding_mode,
                            eps, momentum, freeze_bn, qconfig, dim=2)
 
-class ConvBnReLU2d_sophgo(ConvBn2d_sophgo):
+class ConvBnReLU2d_xx(ConvBn2d_xx):
     r"""
     A ConvBnReLU2d module is a module fused from Conv2d, BatchNorm2d and ReLU,
     attached with FakeQuantize modules for weight,
@@ -429,20 +429,20 @@ class ConvBnReLU2d_sophgo(ConvBn2d_sophgo):
                  # Args for this module
                  freeze_bn=False,
                  qconfig=None):
-        super(ConvBnReLU2d_sophgo, self).__init__(in_channels, out_channels, kernel_size, stride,
+        super(ConvBnReLU2d_xx, self).__init__(in_channels, out_channels, kernel_size, stride,
                                            padding, dilation, groups, bias,
                                            padding_mode, eps, momentum,
                                            freeze_bn,
                                            qconfig)
 
     def forward(self, input):
-        return F.relu(ConvBn2d_sophgo._forward(self, input))
+        return F.relu(ConvBn2d_xx._forward(self, input))
 
     @classmethod
     def from_float(cls, mod):
-        return super(ConvBnReLU2d_sophgo, cls).from_float(mod)
+        return super(ConvBnReLU2d_xx, cls).from_float(mod)
 
-class ConvReLU2d_sophgo(qnnqat.Conv2d_sophgo, _FusedModule):
+class ConvReLU2d_xx(qnnqat.Conv2d_xx, _FusedModule):
     r"""A ConvReLU2d module is a fused module of Conv2d and ReLU, attached with
     FakeQuantize modules for weight for
     quantization aware training.
@@ -463,13 +463,13 @@ class ConvReLU2d_sophgo(qnnqat.Conv2d_sophgo, _FusedModule):
                  padding=0, dilation=1, groups=1,
                  bias=True, padding_mode='zeros',
                  qconfig=None):
-        super(ConvReLU2d_sophgo, self).__init__(in_channels, out_channels, kernel_size,
+        super(ConvReLU2d_xx, self).__init__(in_channels, out_channels, kernel_size,
                                          stride=stride, padding=padding, dilation=dilation,
                                          groups=groups, bias=bias, padding_mode=padding_mode,
                                          qconfig=qconfig)
 
     def forward(self, input):
-        return F.relu(qnnqat.Conv2d_sophgo.forward(self, input))
+        return F.relu(qnnqat.Conv2d_xx.forward(self, input))
 
     @classmethod
     def from_float(cls, mod):

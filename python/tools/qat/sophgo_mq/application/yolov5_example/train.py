@@ -30,9 +30,9 @@ import torch.nn as nn
 import yaml
 from torch.optim import lr_scheduler
 from tqdm import tqdm
-from sophgo_mq.convert_deploy import convert_deploy, convert_onnx
-from sophgo_mq.prepare_by_platform import prepare_by_platform
-from sophgo_mq.utils.state import enable_calibration, enable_quantization, disable_all
+from tt_mq.convert_deploy import convert_deploy, convert_onnx
+from tt_mq.prepare_by_platform import prepare_by_platform
+from tt_mq.utils.state import enable_calibration, enable_quantization, disable_all
 
 
 FILE = Path(__file__).resolve()
@@ -157,7 +157,7 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
     accumulate = max(round(nbs / batch_size), 1)  # accumulate loss before optimizing
     hyp['weight_decay'] *= batch_size * accumulate / nbs  # scale weight_decay
     optimizer = smart_optimizer(model, opt.optimizer, hyp['lr0'], hyp['momentum'], hyp['weight_decay'])
-    
+
     print('wxc1 lr0:', hyp['lr0'])
     # Scheduler
     if opt.cos_lr:
@@ -287,7 +287,7 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
             'input_shape_dict': {'data': [1, 3, opt.imgsz, opt.imgsz]},
             'output_path': output_dir,
             'model_name':  model_name,
-            'dummy_input': None, 
+            'dummy_input': None,
             'onnx_model_path':  os.path.join(output_dir, '{}_ori.onnx'.format(model_name)),
         }
         module_tmp = copy.deepcopy(model)
@@ -444,7 +444,7 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
                 best_fitness = fi
             log_vals = list(mloss) + list(results) + lr
             callbacks.run('on_fit_epoch_end', log_vals, epoch, best_fitness, fi)
-        
+
             # Save model
             # if (not nosave) or (final_epoch and not evolve):  # if save
             #     ckpt = {
@@ -457,7 +457,7 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
             #         'wandb_id': loggers.wandb.wandb_run.id if loggers.wandb else None,
             #         'opt': vars(opt),
             #         'date': datetime.now().isoformat()}
-    
+
             #     # Save last, best and delete
             #     torch.save(ckpt, last)   #wangxuechuan 23.04.12, Can't pickle local object 'add_module_to_qconfig_obs_ctr.<locals>.get_factory_kwargs_based_on_module_device'
             #     if best_fitness == fi:
@@ -488,7 +488,7 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
             convert_deploy(model2.eval(), net_type, input_shape_dict={'data': [1, 3, opt.imgsz, opt.imgsz]},
                 model_name='{}'.format(model_name), output_path=output_dir)
             del model2
-                
+
         # end epoch ----------------------------------------------------------------------------------------------------
     # end training -----------------------------------------------------------------------------------------------------
 
@@ -517,7 +517,7 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
                         callbacks.run('on_fit_epoch_end', list(mloss) + list(results) + lr, epoch, best_fitness, fi)
 
         callbacks.run('on_train_end', last, best, plots, epoch, results)
-    
+
     if opt.quantize:
         model_name = opt.cfg.split('/')[-1].split('.')[0]
         output_dir = os.path.join(opt.output_path, model_name)

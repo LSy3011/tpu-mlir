@@ -6,9 +6,9 @@ import copy
 import onnx
 import numpy as np
 from onnx import numpy_helper
-from sophgo_mq.OnnxOpt import onnx_opt
-from sophgo_mq.utils.logger import logger
-from sophgo_mq.deploy.common import (
+from tt_mq.OnnxOpt import onnx_opt
+from tt_mq.utils.logger import logger
+from tt_mq.deploy.common import (
     update_inp2node_out2node,
     prepare_initializer,
     prepare_data,
@@ -18,10 +18,10 @@ from sophgo_mq.deploy.common import (
 )
 
 
-PERCHANNEL_FAKEQUANTIZER = ['FakeQuantizeLearnablePerchannelAffine', 
+PERCHANNEL_FAKEQUANTIZER = ['FakeQuantizeLearnablePerchannelAffine',
                             'FixedPerChannelAffine',
                             'FakeQuantizeDSQPerchannel']
-PERTENSOR_FAKEQUANTIZER = ['LearnablePerTensorAffine', 
+PERTENSOR_FAKEQUANTIZER = ['LearnablePerTensorAffine',
                            'FixedPerTensorAffine',
                            'FakeQuantizeDSQPertensor',
                            'FakeQuantizeTqtAffine']
@@ -88,7 +88,7 @@ class LinearQuantizer_process(object):
                 qparams = parse_attrs(node.attribute)
                 dtype1=qparams['dtype']
             else:
-                dtype1='None' 
+                dtype1='None'
         elif len(node.attribute) > 0:
             qparams = parse_attrs(node.attribute)
             qmin = qparams['quant_min']
@@ -121,7 +121,7 @@ class LinearQuantizer_process(object):
             logger.info(f'Clip weights <{tensor_name}> to range [{clip_range_min}, {clip_range_max}].')
         new_data = numpy_helper.from_array(new_data)
         named_initializer[tensor_name].raw_data = new_data.raw_data
-    def get_correct_sophgo_tpu_input_tensor_name(self, node, out2node):
+    def get_correct_xx_tpu_input_tensor_name(self, node, out2node):
         input_0 = node.input[0]
         tensor_name = '{}_{}'.format(input_0, out2node[input_0].op_type if input_0 in out2node else '')
         if tensor_name[-1] == '_':
@@ -130,7 +130,7 @@ class LinearQuantizer_process(object):
 
     def post_process_clip_ranges(self, clip_ranges, graph, inp2node, out2node):
         def find_the_closest_clip_range(node):
-            tensor_name = self.get_correct_sophgo_tpu_input_tensor_name(node, out2node)
+            tensor_name = self.get_correct_xx_tpu_input_tensor_name(node, out2node)
 
             if tensor_name in clip_ranges:
                 return tensor_name
@@ -143,7 +143,7 @@ class LinearQuantizer_process(object):
             if node.op_type in ['Flatten', 'Resize']:
                 tensor_name = find_the_closest_clip_range(node)
                 if tensor_name:
-                    new_name = self.get_correct_sophgo_tpu_input_tensor_name(node, out2node)
+                    new_name = self.get_correct_xx_tpu_input_tensor_name(node, out2node)
                     clip_ranges[new_name] = copy.deepcopy(clip_ranges[tensor_name])
                     clip_ranges[new_name]['ori_name'] =  new_name
                     logger.info(f'Pass <{tensor_name}> clip range to <{node.name}> input <{node.input[0]}>.')
@@ -152,11 +152,11 @@ class LinearQuantizer_process(object):
         op_type_inAndOutShouldSameClipRange = ['Flatten', 'Resize', 'Reshape', 'Transpose']
         for node in graph.node:
             tensor_name = f'{node.output[0]}_{node.op_type}'
-            if tensor_name not in clip_ranges:  
+            if tensor_name not in clip_ranges:
                 pre_op = node
                 finded = False
                 while pre_op.op_type in op_type_inAndOutShouldSameClipRange:
-                    tensor_name2 = self.get_correct_sophgo_tpu_input_tensor_name(pre_op, out2node)
+                    tensor_name2 = self.get_correct_xx_tpu_input_tensor_name(pre_op, out2node)
                     if tensor_name2 in clip_ranges:
                         finded = True
                         clip_ranges[tensor_name] = clip_ranges[tensor_name2].copy()
@@ -186,12 +186,12 @@ class LinearQuantizer_process(object):
                                 break
                     else:
                         print(f'{node.name}\'s next_op not exist')
-                        
+
                 # if not finded:
                 #     print(f'Waring:{node.name}\'s clip_ranges not exist, maybe have some error')
         return clip_ranges
-    
-    
+
+
     def post_process_clip_ranges3(self, clip_ranges, graph, inp2node, out2node):
         op_type_quant=['MatMul']
         for node in graph.node:
@@ -228,7 +228,7 @@ class LinearQuantizer_process(object):
                 else:
                     node_name=node.name.split('/')[1]
                     if node_name not in node_name_only_observer:
-                        IS_ONLY_OBSERVER=False 
+                        IS_ONLY_OBSERVER=False
                 nodes_to_be_removed.append(node)
                 nodes_to_be_removed.extend(get_constant_inputs(node, out2node))
             if node.output[0] not in inp2node:
@@ -242,8 +242,8 @@ class LinearQuantizer_process(object):
                 self.clip_weight(node, name2data, inp2node, named_initializer)
                 tensor_name, scale, zero_point, qmin, qmax,dtype1 = self.parse_qparams(node, name2data)
 
-                
-                if backend == 'sophgo_tpu':
+
+                if backend == 'xx_tpu':
                     #卷积权重per-channel量化参数，bias的per-chan量化参数没有去调优
                     if len(next_nodes) == 1 and next_nodes[0][0].op_type in ['Gemm', 'Conv']:#当前伪量化节点只有1个后继，且第1个后继节点为conv类型
                         next_node_output = next_nodes[0][0].output[0]
@@ -285,7 +285,7 @@ class LinearQuantizer_process(object):
                     tensor_name, scale, zero_point, qmin, qmax,dtype = self.parse_qparams(node, name2data)
                     nodes_to_be_removed.extend(redundant_nodes)
                     self.clip_weight(node, name2data, inp2node, named_initializer)
-                    if backend == 'sophgo_tpu':
+                    if backend == 'xx_tpu':
                         assert next_nodes[0][0].op_type == 'Gemm'
                         tensor_name += '{}_{}_weight'.format(inp2node[node.output[0]][0][0].output[0], inp2node[node.output[0]][0][0].op_type)
                         clip_ranges[tensor_name] = {'threshold':float(scale * max(-qmin, qmax)), #对称量化时这个参数生效
@@ -293,7 +293,7 @@ class LinearQuantizer_process(object):
                                                     'max': float(scale * (qmax - zero_point)),
                                                     'bit': int(np.log2(qmax - qmin + 1)),
                                                     'type': "int" if int(np.log2(qmax - qmin + 1))==4 else dtype,
-                                                    'ori_name': 'none'} 
+                                                    'ori_name': 'none'}
                     if backend == 'Academic_NLP':
                         assert next_nodes[0][0].op_type in ['Gemm', 'Conv','Transpose']
                         tensor_name += '{}_{}_weight'.format(inp2node[node.output[0]][0][0].output[0], inp2node[node.output[0]][0][0].op_type)
@@ -302,9 +302,9 @@ class LinearQuantizer_process(object):
                                                     'max': float(scale * (qmax - zero_point)),
                                                     'bit': int(np.log2(qmax - qmin + 1)),
                                                     'type': "int" if int(np.log2(qmax - qmin + 1))==4 else dtype,
-                                                    'ori_name': 'none'}                      
+                                                    'ori_name': 'none'}
                 elif len(next_nodes) == 1 and next_nodes[0][1] == 2 and next_nodes[0][0].op_type in ['Gemm', 'Conv','Transpose']:
-                    # fake quantize for bias 
+                    # fake quantize for bias
                     redundant_nodes = self.deal_with_weight_fakequant(node, out2node, inp2node, named_initializer)
                     tensor_name, scale, zero_point, qmin, qmax,dtype1 = self.parse_qparams(node, name2data)
                     nodes_to_be_removed.extend(redundant_nodes)
@@ -319,8 +319,8 @@ class LinearQuantizer_process(object):
 
                     if backend == 'tensorrt':
                         clip_ranges[tensor_name] = float(scale * max(-qmin, qmax))
-                        
-                    elif backend == 'sophgo_tpu':
+
+                    elif backend == 'xx_tpu':
                         scale_name = node.input[1]
                         post_str = '_post_act_fake_quantizer.scale'
                         if tensor_name in out2node:
@@ -339,7 +339,7 @@ class LinearQuantizer_process(object):
                                                     'max': float(scale * (qmax - zero_point)),
                                                     'bit': int(np.log2(qmax - qmin + 1)),
                                                     'type': "int" if int(np.log2(qmax - qmin + 1))==4 else dtype1,
-                                                    'ori_name': scale_name[:len(scale_name)-len(post_str)] if scale_name.endswith(post_str) else 'none'}    
+                                                    'ori_name': scale_name[:len(scale_name)-len(post_str)] if scale_name.endswith(post_str) else 'none'}
                 if IS_ONLY_OBSERVER==False:
                     clip_ranges[tensor_name]['only_observer']=0
                 else:
@@ -354,15 +354,15 @@ class LinearQuantizer_process(object):
                 continue
             graph.initializer.remove(initial_data)
         clip_ranges = self.post_process_clip_ranges(clip_ranges, graph, inp2node, out2node)
-        if backend == 'sophgo_tpu':
+        if backend == 'xx_tpu':
             clip_ranges = self.post_process_clip_ranges2(clip_ranges, graph, inp2node, out2node)
-            context = {'sophgo_tpu': clip_ranges}
+            context = {'xx_tpu': clip_ranges}
             context['w_qscheme'] = ''
             context['a_qscheme'] = ''
         elif backend == 'Academic_NLP':
             clip_ranges = self.post_process_clip_ranges2(clip_ranges, graph, inp2node, out2node)
             clip_ranges = self.post_process_clip_ranges3(clip_ranges, graph, inp2node, out2node)
-            context = {'Academic_NLP': clip_ranges}  
+            context = {'Academic_NLP': clip_ranges}
         output_path = os.path.dirname(onnx_path)
         context_filename = os.path.join(output_path, '{}_clip_ranges.json'.format(model_name))
         with open(context_filename, 'w') as f:

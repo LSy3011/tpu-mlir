@@ -2,9 +2,9 @@ import torch
 from torch.nn.parameter import Parameter
 from torch.onnx import symbolic_helper
 
-from sophgo_mq.fake_quantize.quantize_base import QuantizeBase
-from sophgo_mq.utils import is_symmetric_quant, is_tracing_state
-from sophgo_mq.utils.hook import PerChannelLoadHook
+from tt_mq.fake_quantize.quantize_base import QuantizeBase
+from tt_mq.utils import is_symmetric_quant, is_tracing_state
+from tt_mq.utils.hook import PerChannelLoadHook
 
 
 class LearnableFakeQuantize(QuantizeBase):
@@ -122,7 +122,7 @@ class FakeQuantizeLearnablePerchannelAffine(torch.autograd.Function):
 
     @staticmethod
     def symbolic(g, x, scale, zero_point, ch_axis, quant_min, quant_max, grad_factor):
-        output = g.op("Sophgo_custom::FakeQuantizeLearnablePerchannelAffine", x, scale, zero_point, quant_min_i=quant_min, quant_max_i=quant_max)
+        output = g.op("xx_custom::FakeQuantizeLearnablePerchannelAffine", x, scale, zero_point, quant_min_i=quant_min, quant_max_i=quant_max)
 
         input_shape = symbolic_helper._get_tensor_sizes(x)
         if input_shape is not None and hasattr(x.type(), 'with_sizes'):

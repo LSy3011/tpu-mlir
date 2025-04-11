@@ -19,9 +19,9 @@ from transformers import (
 from transformers.utils.fx import HFTracer
 from transformers.onnx.features import FeaturesManager
 from itertools import chain
-from sophgo_mq.prepare_by_platform import prepare_by_platform
-from sophgo_mq.convert_deploy import convert_deploy
-from sophgo_mq.utils.state import enable_quantization, enable_calibration_woquantization
+from tt_mq.prepare_by_platform import prepare_by_platform
+from tt_mq.convert_deploy import convert_deploy
+from tt_mq.utils.state import enable_quantization, enable_calibration_woquantization
 
 
 logger = logging.getLogger("transformer")
@@ -151,7 +151,7 @@ def main(config_path):
         if len(result) > 1:
             result["combined_score"] = np.mean(list(result.values())).item()
         return result
-    
+
     # Data collator will default to DataCollatorWithPadding, so we change it if we already did the padding.
     if config.data.pad_to_max_length:
         data_collator = default_data_collator
@@ -181,7 +181,7 @@ def main(config_path):
         if hasattr(config, 'quant'):
             enable_quantization(trainer.model)
         evaluate(trainer, eval_datasets) #此步骤进行了fake quant操作，注释以后即可跳过fake quant的计算操作
-    
+
     model_kind, model_onnx_config = FeaturesManager.check_supported_model_or_raise(model, feature='default')
     onnx_config = model_onnx_config(model.config)
     export_inputs = {}

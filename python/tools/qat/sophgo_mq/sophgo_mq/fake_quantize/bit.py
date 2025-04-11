@@ -2,8 +2,8 @@ import torch
 import math
 import ipdb
 from scipy.stats import norm
-from sophgo_mq.fake_quantize.quantize_base import QuantizeBase
-from sophgo_mq.utils.hook import PerChannelLoadHook
+from tt_mq.fake_quantize.quantize_base import QuantizeBase
+from tt_mq.utils.hook import PerChannelLoadHook
 
 
 INT4=[-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,]
@@ -25,21 +25,21 @@ NF4 = [
     0.7229568362236023,
     1.0,
 ]
-AF4=[-1.0, 
-     -0.69441008, 
+AF4=[-1.0,
+     -0.69441008,
      -0.51243739,
-      -0.3736951, 
-     -0.25607552, 
+      -0.3736951,
+     -0.25607552,
      -0.14982478,
-     -0.04934812,  
-     0.0, 
-     0.04273164, 
-     0.12934483, 
-     0.21961274, 
+     -0.04934812,
+     0.0,
+     0.04273164,
+     0.12934483,
+     0.21961274,
      0.31675666,
-     0.42563882,  
-     0.55496234,  
-     0.72424863,  
+     0.42563882,
+     0.55496234,
+     0.72424863,
      1.0,
 ]
 FP4_BNB = [-12.0, -8.0, -6.0, -4.0, -3.0, -2.0, -0.0625, 0, 0.0625, 2.0, 3.0, 4.0, 6.0, 8.0, 12.0]
@@ -78,11 +78,11 @@ class BitFakeQuantize(QuantizeBase):
         self.group_size=8
 
     def forward(self, X):
-        
+
         assert self.data_type in FLOAT_MAPPING, "unexpected data type."
         allow_data = FLOAT_MAPPING[self.data_type]                 #float类型
         allow_data_bit = INT_MAPPING[self.data_type]               #int类型
-        
+
         if self.observer_enabled[0] == 1:
             self.activation_post_process(X.detach())
             _scale, _zero_point = self.calculate_qparams()
@@ -124,13 +124,13 @@ class BitFakeQuantize(QuantizeBase):
 
     @torch.jit.export
     def extra_repr(self):
-        allow_data = FLOAT_MAPPING[self.data_type] 
+        allow_data = FLOAT_MAPPING[self.data_type]
         return 'fake_quant_enabled={}, observer_enabled={}, ' \
                'quant_min={}, quant_max={}, dtype={}, qscheme={}, ch_axis={}, ' \
                'scale={}, zero_point={}'.format(
                    self.fake_quant_enabled, self.observer_enabled,
                    min(allow_data), max(allow_data),
-                   self.dtype, self.qscheme, self.ch_axis, self.scale if self.ch_axis == -1 else 'List', 
+                   self.dtype, self.qscheme, self.ch_axis, self.scale if self.ch_axis == -1 else 'List',
                    self.zero_point if self.ch_axis == -1 else 'List')
 
     def _save_to_state_dict(self, destination, prefix, keep_vars):

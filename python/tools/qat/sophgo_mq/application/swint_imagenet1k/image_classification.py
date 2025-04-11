@@ -27,9 +27,9 @@ from torchvision.transforms import (
 from transformers.onnx.features import FeaturesManager
 from transformers.utils.fx import HFTracer, get_concrete_args
 from transformers.trainer_utils import get_last_checkpoint, EvalLoopOutput
-from sophgo_mq.convert_deploy import convert_deploy
-from sophgo_mq.prepare_by_platform import prepare_by_platform
-from sophgo_mq.utils.state import enable_quantization, enable_calibration_woquantization,enable_calibration,disable_all
+from tt_mq.convert_deploy import convert_deploy
+from tt_mq.prepare_by_platform import prepare_by_platform
+from tt_mq.utils.state import enable_quantization, enable_calibration_woquantization,enable_calibration,disable_all
 
 logger = logging.getLogger("transformer")
 
@@ -251,7 +251,7 @@ def main(config_path):
     # Calibration
     if hasattr(config, 'quant'):
         calibration(trainer, config.quant)
-    
+
     if hasattr(config, 'quant'):
         disable_all(trainer.model.cuda())
     metrics_ori = trainer.evaluate()

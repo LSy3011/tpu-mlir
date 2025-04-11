@@ -1,7 +1,7 @@
 import torch
 from torch.nn.parameter import Parameter
 
-from sophgo_mq.fake_quantize.quantize_base import QuantizeBase
+from tt_mq.fake_quantize.quantize_base import QuantizeBase
 
 
 class PACTFakeQuantize(QuantizeBase):

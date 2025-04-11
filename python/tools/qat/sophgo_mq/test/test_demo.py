@@ -5,14 +5,14 @@ from transformers.utils.fx import HFTracer
 from transformers.onnx.features import FeaturesManager
 from itertools import chain
 
-from sophgo_mq.prepare_by_platform import prepare_by_platform
-from sophgo_mq.convert_deploy import convert_deploy
-from sophgo_mq.utils.state import enable_quantization, enable_calibration
+from tt_mq.prepare_by_platform import prepare_by_platform
+from tt_mq.convert_deploy import convert_deploy
+from tt_mq.utils.state import enable_quantization, enable_calibration
 
 def resnet18_test():
     ## 1.  define model
     model = models.__dict__['resnet18']()
-    
+
     ## 2. prepare model
     extra_prepare_dict = {
         'quant_dict': {
@@ -31,9 +31,9 @@ def resnet18_test():
     enable_quantization(model)
 
     ## 4. deploy
-    convert_deploy(model, net_type='CNN', 
-                   input_shape_dict={'input': [1, 3, 224, 224]}, 
-                   output_path='./', 
+    convert_deploy(model, net_type='CNN',
+                   input_shape_dict={'input': [1, 3, 224, 224]},
+                   output_path='./',
                    model_name='resnet18')
 
 def bert_test():
@@ -106,6 +106,6 @@ def bert_test():
 
 
 if __name__ == '__main__':
-    
+
     resnet18_test()
     bert_test()

@@ -1,4 +1,4 @@
-**注意：所有提交到代码库的第三方依赖库都必须是release版本的；nntoolchain和libsophon需要与tpu-mlir同级目录**
+**注意：所有提交到代码库的第三方依赖库都必须是release版本的；nntoolchain和libxx需要与tpu-mlir同级目录**
 
 ## TPU1684 2024-11-20
 sha256: 6ca642e822618af4cffcf531d2cc9e81edc8e03e
@@ -82,7 +82,7 @@ cp build/firmware_core/libfirmware_core.a /workspace/tpu-mlir/third_party/nntool
 ## tpu-runtime 2025-1-17
 build from tpu-runtime f2bd5f7ba035b624f25fb7d8b6792b3d2180177b
 ``` bash
-pushd libsophon
+pushd libxx
 mkdir -p build && cd build
 cmake -G Ninja -DPLATFORM=cmodel -DCMAKE_BUILD_TYPE=DEBUG ../ # release version has problem
 ninja

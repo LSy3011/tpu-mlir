@@ -9,7 +9,7 @@
 #
 # ==============================================================================
 # @Time    : 2023/8/23 15:16
-# @Author  : chongqing.zeng@sophgo.com
+
 # @Project: PerfAI
 from tqdm import tqdm
 

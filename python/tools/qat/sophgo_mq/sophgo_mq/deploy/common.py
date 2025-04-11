@@ -5,13 +5,13 @@ from onnx import numpy_helper
 from onnx import TensorProto
 
 
-from sophgo_mq.utils.logger import logger
+from tt_mq.utils.logger import logger
 
 
 class ONNXGraph(object):
     def __init__(self, onnx_model_path):
         '''Describe onnx graph
-        args: 
+        args:
             input_map[tensor_name] = node which input is tensor_name
             output_map[tensor_name] = node which output is tensor_name
         '''
@@ -206,7 +206,7 @@ def update_inp2node_out2node(graph):
     return out2node, inp2node
 
 
-def prepare_data(graph): 
+def prepare_data(graph):
     params = {}
     for init in graph.initializer:
         params[init.name] = numpy_helper.to_array(init)

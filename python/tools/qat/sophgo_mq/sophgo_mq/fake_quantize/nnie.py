@@ -1,7 +1,7 @@
 import torch
 
-from sophgo_mq.fake_quantize.quantize_base import QuantizeBase
-from sophgo_mq.utils import no_jit_trace
+from tt_mq.fake_quantize.quantize_base import QuantizeBase
+from tt_mq.utils import no_jit_trace
 
 
 class NNIEFakeQuantize(QuantizeBase):

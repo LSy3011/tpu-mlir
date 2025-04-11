@@ -276,7 +276,7 @@ class ProfileMeta:
     version: int = 27  # number,
     preprocessedProfileVersion: int = 45  # number,
     product: str = "TPU-MLIR"  # 'Firefox' | string,
-    oscpu: str = "TPU Sophgo"  # string?,
+    oscpu: str = "TPU XXX"  # string?,
     processType: int = 0  # number,
 
 
@@ -670,7 +670,7 @@ meta = ProfileMeta(
     categories=categories,
     CPUName="bm1684x",
     mainMemory=2**32,
-    sourceURL="sophgo.com",
+    sourceURL="xx.com",
     physicalCPUs=1,
     logicalCPUs=2,
     markerSchema=[],

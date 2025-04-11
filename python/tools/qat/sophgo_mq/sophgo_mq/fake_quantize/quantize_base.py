@@ -3,7 +3,7 @@ from torch.quantization import FakeQuantizeBase
 from torch.quantization.observer import MovingAverageMinMaxObserver
 from torch.quantization.fake_quantize import _is_per_channel, _is_per_tensor
 
-from sophgo_mq.utils import is_symmetric_quant
+from tt_mq.utils import is_symmetric_quant
 
 _version_under_1100 = (int(torch.__version__.split('.')[1]) < 10) and (int(torch.__version__.split('.')[0]) == 1)
 
@@ -39,7 +39,7 @@ class QuantizeBase(FakeQuantizeBase):
         bitrange = torch.tensor(self.quant_max - self.quant_min + 1).double()
         self.bitwidth = int(torch.log2(bitrange).item())
         self.is_symmetric_quant = is_symmetric_quant(self.qscheme)
-    
+
     def enable_only_observer(self, enable = True):
         self.only_enable_observer = enable
         self.run_fquant_time = 1

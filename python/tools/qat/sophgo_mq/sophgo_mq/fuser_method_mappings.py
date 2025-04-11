@@ -4,11 +4,11 @@ import torch
 import torch.nn as nn
 from torch.fx.graph import Node
 
-import sophgo_mq.nn as qnn
-import sophgo_mq.nn.intrinsic as qnni
-import sophgo_mq.nn.intrinsic.qat as qnniqat
-from sophgo_mq.utils.fusion import fuse_deconv_bn_eval
-from sophgo_mq.nn.modules import FrozenBatchNorm2d
+import tt_mq.nn as qnn
+import tt_mq.nn.intrinsic as qnni
+import tt_mq.nn.intrinsic.qat as qnniqat
+from tt_mq.utils.fusion import fuse_deconv_bn_eval
+from tt_mq.nn.modules import FrozenBatchNorm2d
 
 from collections import OrderedDict
 from torch.ao.quantization.fuser_method_mappings import get_fuser_method

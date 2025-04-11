@@ -1,7 +1,7 @@
 import torch
 from collections import OrderedDict
-from sophgo_mq.utils.registry import register_model_quantizer
-from sophgo_mq.custom_quantizer import ModelQuantizer
+from tt_mq.utils.registry import register_model_quantizer
+from tt_mq.custom_quantizer import ModelQuantizer
 
 @register_model_quantizer("Academic")
 class AcademicNLPQuantizer(ModelQuantizer):

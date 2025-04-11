@@ -37,8 +37,8 @@ python_version=$(python3.10 -V 2>&1 | awk '{print $2}')
 
 if [ "$os_version" != "22.04" ] || [[ ! "$python_version" == 3.10* ]]; then
     echo "Error: System requirements not met (ubuntu==22.04 and python==3.10)."
-    echo "       You can use sophgo/tpuc_dev:v3.3 docker image."
-    echo " hint: docker pull sophgo/tpuc_dev:v3.3"
+    echo "       You can use XX/tpuc_dev:v3.3 docker image."
+    echo " hint: docker pull XX/tpuc_dev:v3.3"
     exit 1
 fi
 
@@ -68,7 +68,7 @@ export REGRESSION_PATH=${TPUC_ROOT}/regression
 export CUSTOM_LAYER_PATH=${TPUC_ROOT}/customlayer
 
 export CMODEL_LD_LIBRARY_PATH=$TPUC_ROOT/lib:$LD_LIBRARY_PATH
-export CHIP_LD_LIBRARY_PATH=/opt/sophon/libsophon-current/lib/:$TPUC_ROOT/lib:$LD_LIBRARY_PATH
+export CHIP_LD_LIBRARY_PATH=/opt/kk/libxx-current/lib/:$TPUC_ROOT/lib:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=$CMODEL_LD_LIBRARY_PATH
 function use_cmodel(){
     export USING_CMODEL=True

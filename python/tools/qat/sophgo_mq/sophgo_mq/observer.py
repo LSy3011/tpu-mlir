@@ -4,10 +4,10 @@ from typing import Tuple
 import torch
 from torch.quantization.observer import _ObserverBase
 
-from sophgo_mq.fake_quantize.quantize_base import _version_under_1100 
-from sophgo_mq.utils import sync_tensor, pot_quantization, is_symmetric_quant
-from sophgo_mq.utils.logger import logger
-from sophgo_mq.utils.hook import PerChannelLoadHook
+from tt_mq.fake_quantize.quantize_base import _version_under_1100
+from tt_mq.utils import sync_tensor, pot_quantization, is_symmetric_quant
+from tt_mq.utils.logger import logger
+from tt_mq.utils.hook import PerChannelLoadHook
 
 
 class ObserverBase(_ObserverBase):
@@ -523,7 +523,7 @@ class MSEObserver(ObserverBase):
             new_max = x_max * (1.0 - (i * 0.01))
             scale, zero_point = self._calculate_qparams(new_min, new_max)
             x_q = torch.fake_quantize_per_channel_affine(
-                x, scale, zero_point.long() if _version_under_1100 else zero_point, ch_axis, 
+                x, scale, zero_point.long() if _version_under_1100 else zero_point, ch_axis,
                 self.quant_min, self.quant_max)
             score = self.lp_loss(x_q, x, reduce_dim)
             update_idx = (score < best_score)
@@ -602,7 +602,7 @@ class EMAMSEObserver(ObserverBase):
             new_max = x_max * (1.0 - (i * 0.01))
             scale, zero_point = self._calculate_qparams(new_min, new_max)
             x_q = torch.fake_quantize_per_channel_affine(
-                x, scale, zero_point.long() if _version_under_1100 else zero_point, ch_axis, 
+                x, scale, zero_point.long() if _version_under_1100 else zero_point, ch_axis,
                 self.quant_min, self.quant_max)
             score = self.lp_loss(x_q, x, reduce_dim)
             update_idx = (score < best_score)

@@ -9,7 +9,7 @@
 #
 # ==============================================================================
 # @Time    : 2023/7/18 10:46
-# @Author  : chongqing.zeng@sophgo.com
+
 # @Project : PerfAI
 import os
 

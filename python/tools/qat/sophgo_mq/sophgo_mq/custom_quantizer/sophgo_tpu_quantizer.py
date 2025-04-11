@@ -3,17 +3,17 @@ import torch
 import random
 from torch.fx import GraphModule
 import torch.nn.intrinsic as nni
-from sophgo_mq.utils import getitem2node
-import sophgo_mq.nn.intrinsic.qat as qnniqat
-import sophgo_mq.nn.intrinsic as qnni
-from sophgo_mq.utils.registry import register_model_quantizer
-from sophgo_mq.custom_quantizer import ModelQuantizer
+from tt_mq.utils import getitem2node
+import tt_mq.nn.intrinsic.qat as qnniqat
+import tt_mq.nn.intrinsic as qnni
+from tt_mq.utils.registry import register_model_quantizer
+from tt_mq.custom_quantizer import ModelQuantizer
 import torch.nn as nn
-import sophgo_mq.nn.qat as qnnqat
+import tt_mq.nn.qat as qnnqat
 from collections import OrderedDict
-from sophgo_mq.utils.logger import logger
+from tt_mq.utils.logger import logger
 
-from sophgo_mq.fake_quantize import (
+from tt_mq.fake_quantize import (
     LearnableFakeQuantize,
     Fp16FakeQuantize,
     BF16FakeQuantize
@@ -21,7 +21,7 @@ from sophgo_mq.fake_quantize import (
 from typing import (
     List, Dict, Any, Callable
 )
-from sophgo_mq.utils import get_flattened_qconfig_dict
+from tt_mq.utils import get_flattened_qconfig_dict
 
 def generate_random_string(length):
     chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
@@ -37,7 +37,7 @@ def generate_random_string(length):
 @register_model_quantizer("CV180X")
 @register_model_quantizer("CV186X")
 @register_model_quantizer("SGTPUV8")
-class SophgoTpuQuantizer(ModelQuantizer):
+class xxTpuQuantizer(ModelQuantizer):
     """
     We quantize the input tensors and output tensors of all layers,
     except those in _passed_func_type and _passed_module_type.
@@ -49,16 +49,16 @@ class SophgoTpuQuantizer(ModelQuantizer):
         if self.quantmode=="weight_activation":
             self.additional_qat_module_mapping = {
                 # Intrinsic modules:
-                nni.ConvBn2d: qnniqat.ConvBn2d_sophgo,
-                nni.ConvBnReLU2d: qnniqat.ConvBnReLU2d_sophgo,
-                nn.Conv2d: qnnqat.Conv2d_sophgo,
-                nni.ConvReLU2d: qnniqat.ConvReLU2d_sophgo,
-                nni.LinearReLU: qnniqat.LinearReLU_sophgo,
-                nn.Linear: qnniqat.Linear_sophgo,
-                qnni.LinearBn1d: qnniqat.LinearBn1d_sophgo,
-                qnni.ConvTransposeBnReLU2d:qnniqat.ConvTransposeBnReLU2d_sophgo,
-                qnni.ConvTransposeReLU2d:qnniqat.ConvTransposeReLU2d_sophgo,
-                qnni.ConvTransposeBn2d:qnniqat.ConvTransposeBn2d_sophgo,
+                nni.ConvBn2d: qnniqat.ConvBn2d_xx,
+                nni.ConvBnReLU2d: qnniqat.ConvBnReLU2d_xx,
+                nn.Conv2d: qnnqat.Conv2d_xx,
+                nni.ConvReLU2d: qnniqat.ConvReLU2d_xx,
+                nni.LinearReLU: qnniqat.LinearReLU_xx,
+                nn.Linear: qnniqat.Linear_xx,
+                qnni.LinearBn1d: qnniqat.LinearBn1d_xx,
+                qnni.ConvTransposeBnReLU2d:qnniqat.ConvTransposeBnReLU2d_xx,
+                qnni.ConvTransposeReLU2d:qnniqat.ConvTransposeReLU2d_xx,
+                qnni.ConvTransposeBn2d:qnniqat.ConvTransposeBn2d_xx,
             }
         self.exclude_module_name.append(nn.modules.dropout.Dropout)
         self.quant_dict = quant_dict
@@ -124,9 +124,9 @@ class SophgoTpuQuantizer(ModelQuantizer):
     def module_type_to_quant_input_transformer(self) -> tuple:
         return (
             # Linear
-            qnnqat.Conv2d_sophgo,
-            qnniqat.LinearReLU_sophgo,
-            qnniqat.Linear_sophgo,
+            qnnqat.Conv2d_xx,
+            qnniqat.LinearReLU_xx,
+            qnniqat.Linear_xx,
             torch.nn.qat.modules.linear.Linear,
         ) + self.additional_module_type
 
@@ -148,25 +148,25 @@ class SophgoTpuQuantizer(ModelQuantizer):
     @property
     def _layers_need_scale_form_input_fake_quantizer(self):
         return (
-            qnniqat.ConvBnReLU2d_sophgo, #todo:add transposeConv support
-            qnniqat.ConvBn2d_sophgo,
-            qnniqat.ConvReLU2d_sophgo,
-            qnnqat.Conv2d_sophgo,
-            qnniqat.LinearReLU_sophgo,
-            qnniqat.Linear_sophgo,
-            qnniqat.LinearBn1d_sophgo,
-            qnniqat.ConvTransposeBnReLU2d_sophgo,
-            qnniqat.ConvTransposeReLU2d_sophgo,
-            qnniqat.ConvTransposeBn2d_sophgo,
+            qnniqat.ConvBnReLU2d_xx, #todo:add transposeConv support
+            qnniqat.ConvBn2d_xx,
+            qnniqat.ConvReLU2d_xx,
+            qnnqat.Conv2d_xx,
+            qnniqat.LinearReLU_xx,
+            qnniqat.Linear_xx,
+            qnniqat.LinearBn1d_xx,
+            qnniqat.ConvTransposeBnReLU2d_xx,
+            qnniqat.ConvTransposeReLU2d_xx,
+            qnniqat.ConvTransposeBn2d_xx,
         )
 
     @property
     def _layers_need_check_is_dw(self):
         return (
-            qnniqat.ConvBnReLU2d_sophgo,
-            qnniqat.ConvBn2d_sophgo,
-            qnniqat.ConvReLU2d_sophgo,
-            qnnqat.Conv2d_sophgo,
+            qnniqat.ConvBnReLU2d_xx,
+            qnniqat.ConvBn2d_xx,
+            qnniqat.ConvReLU2d_xx,
+            qnnqat.Conv2d_xx,
         )
 
     def insert_node(self, model, pre_node, new_next_node_name):

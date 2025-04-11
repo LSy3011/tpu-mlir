@@ -6,7 +6,7 @@
  *    of This is proprietary information owned by
  *    No part of this work may be disclosed,
  *    reproduced, copied, transmitted, or used in any way for any purpose,
- *    without the express written permission of Sophgo Technologies Inc.
+ *    without the express written permission of xx Technologies Inc.
  *
  *****************************************************************************/
 

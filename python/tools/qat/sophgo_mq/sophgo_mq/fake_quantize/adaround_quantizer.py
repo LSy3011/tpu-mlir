@@ -1,8 +1,8 @@
 import torch
 from torch.nn.parameter import Parameter
 
-from sophgo_mq.fake_quantize.quantize_base import QuantizeBase, _version_under_1100 
-from sophgo_mq.utils.hook import PerChannelLoadHook
+from tt_mq.fake_quantize.quantize_base import QuantizeBase, _version_under_1100
+from tt_mq.utils.hook import PerChannelLoadHook
 
 def _rectified_sigmoid(alpha, zeta, gamma):
     """Function to generate rounding mask.

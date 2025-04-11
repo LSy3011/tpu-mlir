@@ -9,11 +9,11 @@ from torch.nn.intrinsic import _FusedModule
 from torch.nn.parameter import Parameter
 from torch.nn.modules.utils import _pair
 
-from typing import TypeVar 
+from typing import TypeVar
 
 
-import sophgo_mq.nn.qat as qnnqat
-from sophgo_mq.quantization.default_bias_fake_quant import bias_fake_quantizer
+import tt_mq.nn.qat as qnnqat
+from tt_mq.quantization.default_bias_fake_quant import bias_fake_quantizer
 
 _BN_CLASS_MAP = {
     1: nn.BatchNorm1d,
@@ -109,14 +109,14 @@ class _ConvBnNd(nn.modules.conv._ConvNd, _FusedModule):
         # will be added later
         if self.bias is not None:
             zero_bias = torch.zeros_like(self.bias)
-            conv_bias = self.bias 
+            conv_bias = self.bias
         else:
             zero_bias = torch.zeros(self.out_channels, device=scaled_weight.device)
             conv_bias = torch.zeros_like(zero_bias, device=scaled_weight.device)
         if self.bn.affine:
-            full_bias = (conv_bias - self.bn.running_mean) / running_std * self.bn.weight + self.bn.bias 
+            full_bias = (conv_bias - self.bn.running_mean) / running_std * self.bn.weight + self.bn.bias
         else:
-            full_bias = (conv_bias - self.bn.running_mean) / running_std 
+            full_bias = (conv_bias - self.bn.running_mean) / running_std
         quant_bias = self.bias_fake_quant(full_bias)
         conv_with_bias = self._conv_forward(input, scaled_weight, quant_bias)
         conv_orig = (conv_with_bias - full_bias.reshape(bias_shape)) / scale_factor.reshape(bias_shape) + conv_bias.reshape(bias_shape)

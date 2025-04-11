@@ -15,7 +15,7 @@ import random
 import datetime
 import time
 import copy
-import ipdb 
+import ipdb
 from torch.utils.data import Dataset, DataLoader, random_split, RandomSampler, SequentialSampler
 torch.manual_seed(42)
 from transformers import GPT2LMHeadModel,  GPT2Tokenizer, GPT2Config, GPT2LMHeadModel
@@ -31,11 +31,11 @@ from transformers import default_data_collator
 from transformers.onnx.features import FeaturesManager
 from datasets import load_dataset,load_metric
 import torch.optim as optim
-from sophgo_mq.convert_deploy import convert_deploy, convert_onnx
-from sophgo_mq.prepare_by_platform import prepare_by_platform, BackendType
-from sophgo_mq.utils.state import enable_calibration, enable_quantization, disable_all
+from tt_mq.convert_deploy import convert_deploy, convert_onnx
+from tt_mq.prepare_by_platform import prepare_by_platform, BackendType
+from tt_mq.utils.state import enable_calibration, enable_quantization, disable_all
 from transformers import logging
-import torch.onnx 
+import torch.onnx
 import logging
 import os
 import collections
@@ -49,7 +49,7 @@ from transformers import GPT2Tokenizer, GPT2LMHeadModel, AdamW, get_linear_sched
 from transformers import BertTokenizer, BertModel
 from transformers.utils.fx import HFTracer
 
-parser = argparse.ArgumentParser(description='sophgo_mq gpt2 Training')
+parser = argparse.ArgumentParser(description='tt_mq gpt2 Training')
 
 parser.add_argument('--epochs', default=3, type=int, metavar='N',
                     help='number of total epochs to run')
@@ -72,7 +72,7 @@ parser.add_argument('--aob', default='EMAQuantileObserver', type=str,
 parser.add_argument('--wfq', default='LearnableFakeQuantize', type=str,
                     metavar='wfq', help='weight fakequantize')
 parser.add_argument('--afq', default='LearnableFakeQuantize', type=str,
-                    metavar='afq', help='active fakequantize')  
+                    metavar='afq', help='active fakequantize')
 #clean data
 def cleaning(text,punct):
     cleaned_text = clean(text,
@@ -89,14 +89,14 @@ def cleaning(text,punct):
         no_punct=punct,                 # remove punctuations
         lang="en"                       # set to 'de' for German special handling
     )
-    
+
     tokens = word_tokenize(cleaned_text)
     filtered_sentence = [w for w in tokens if not w in stopwords.words('english')]
     cleaned_text_0 = ' '.join(filtered_sentence)
     return cleaned_text_0
 #train
 def train(model,epochs,optimizer,scheduler,train_dataloader,validation_dataloader):
-    
+
     total_t0 = time.time()
     training_stats = []
     model = model.to(device)
@@ -111,19 +111,19 @@ def train(model,epochs,optimizer,scheduler,train_dataloader,validation_dataloade
             b_input_ids = batch[0].to(device)
             b_labels = batch[0].to(device)
             b_masks = batch[1].to(device)
-            model.zero_grad()        
+            model.zero_grad()
             outputs = model(b_input_ids,
                             attention_mask = b_masks,
                             labels=b_labels
                             )
-            loss = outputs[0]  
+            loss = outputs[0]
             batch_loss = loss.item()
             total_train_loss += batch_loss
             loss.backward()
             optimizer.step()
             scheduler.step()
         # Calculate the average loss over all of the batches.
-        avg_train_loss = total_train_loss / len(train_dataloader) 
+        avg_train_loss = total_train_loss / len(train_dataloader)
         # Measure how long this epoch took.
         training_time = format_time(time.time() - t0)
         print("")
@@ -138,20 +138,20 @@ def train(model,epochs,optimizer,scheduler,train_dataloader,validation_dataloade
         nb_eval_steps = 0
 
         # Evaluate data for one epoch
-        for batch in validation_dataloader: 
+        for batch in validation_dataloader:
             b_input_ids = batch[0].to(device)
             b_labels = batch[0].to(device)
-            b_masks = batch[1].to(device)       
+            b_masks = batch[1].to(device)
             with torch.no_grad():
-                outputs  = model(b_input_ids, 
-    #                            token_type_ids=None, 
+                outputs  = model(b_input_ids,
+    #                            token_type_ids=None,
                                  attention_mask = b_masks,
                                 labels=b_labels)
-                loss = outputs[0]              
+                loss = outputs[0]
             batch_loss = loss.item()
-            total_eval_loss += batch_loss        
+            total_eval_loss += batch_loss
         avg_val_loss = total_eval_loss / len(validation_dataloader)
-        validation_time = format_time(time.time() - t0)    
+        validation_time = format_time(time.time() - t0)
         print("  Validation Loss: {0:.2f}".format(avg_val_loss))
         print("  Validation took: {:}".format(validation_time))
         # Record all statistics from this epoch.
@@ -170,7 +170,7 @@ def train(model,epochs,optimizer,scheduler,train_dataloader,validation_dataloade
     return model,training_stats
 #quant train
 def train1(model,epochs,optimizer,scheduler,train_dataloader,validation_dataloader):
-    
+
     total_t0 = time.time()
     training_stats = []
     model = model.to(device)
@@ -185,19 +185,19 @@ def train1(model,epochs,optimizer,scheduler,train_dataloader,validation_dataload
             b_input_ids = batch[0].to(device)
             b_labels = batch[0].to(device)
             b_masks = batch[1].to(device)
-            model.zero_grad()        
+            model.zero_grad()
             outputs = model(b_input_ids,
                             attention_mask = b_masks,
                             labels=b_labels
                             )
-            loss = outputs[0]  
+            loss = outputs[0]
             batch_loss = loss.item()
             total_train_loss += batch_loss
             loss.backward()
             optimizer.step()
             scheduler.step()
         # Calculate the average loss over all of the batches.
-        avg_train_loss = total_train_loss / len(train_dataloader) 
+        avg_train_loss = total_train_loss / len(train_dataloader)
         # Measure how long this epoch took.
         training_time = format_time(time.time() - t0)
         print("")
@@ -212,20 +212,20 @@ def train1(model,epochs,optimizer,scheduler,train_dataloader,validation_dataload
         nb_eval_steps = 0
 
         # Evaluate data for one epoch
-        for batch in validation_dataloader: 
+        for batch in validation_dataloader:
             b_input_ids = batch[0].to(device)
             b_labels = batch[0].to(device)
-            b_masks = batch[1].to(device)       
+            b_masks = batch[1].to(device)
             with torch.no_grad():
-                outputs  = model(b_input_ids, 
-    #                            token_type_ids=None, 
+                outputs  = model(b_input_ids,
+    #                            token_type_ids=None,
                                  attention_mask = b_masks,
                                 labels=b_labels)
-                loss = outputs[0]              
+                loss = outputs[0]
             batch_loss = loss.item()
-            total_eval_loss += batch_loss        
+            total_eval_loss += batch_loss
         avg_val_loss = total_eval_loss / len(validation_dataloader)
-        validation_time = format_time(time.time() - t0)    
+        validation_time = format_time(time.time() - t0)
         print("  Validation Loss: {0:.2f}".format(avg_val_loss))
         print("  Validation took: {:}".format(validation_time))
         # Record all statistics from this epoch.
@@ -321,12 +321,12 @@ class GPT2Dataset(Dataset):
             encodings_dict = tokenizer( '<|startoftext|>'+ txt + '<|endoftext|>', truncation=True, max_length=max_length,padding="max_length") #, padding="max_length"
             self.input_ids.append(torch.tensor(encodings_dict['input_ids']))
             self.attn_masks.append(torch.tensor(encodings_dict['attention_mask']))
-    
+
     def __len__(self):
         return len(self.input_ids)
 
     def __getitem__(self, idx):
-        return self.input_ids[idx], self.attn_masks[idx] 
+        return self.input_ids[idx], self.attn_masks[idx]
 
 ######################################################################################################################
 
@@ -389,14 +389,14 @@ validation_dataloader = DataLoader(
             batch_size = batch_size # Evaluate with this batch size.
         )
 cali_loader = DataLoader(
-            cali_loader, 
+            cali_loader,
             sampler = SequentialSampler(cali_loader),
-            batch_size = 2 
+            batch_size = 2
         )
 test_dataloader = DataLoader(
-            testdataset, 
-            sampler = RandomSampler(testdataset), 
-            batch_size =batch_size 
+            testdataset,
+            sampler = RandomSampler(testdataset),
+            batch_size =batch_size
         )
 #load model
 configuration = GPT2Config.from_pretrained('gpt2',resid_pdrop = 0.3 , output_hidden_states=False)
@@ -409,7 +409,7 @@ random.seed(seed_val)
 np.random.seed(seed_val)
 torch.manual_seed(seed_val)
 torch.cuda.manual_seed_all(seed_val)
-#quantize 
+#quantize
 sig = inspect.signature(model.forward)
 input_names =['input_ids','attention_mask']
 concrete_args = {p.name: p.default for p in sig.parameters.values() if p.name not in input_names}
@@ -448,9 +448,9 @@ class Quantizegpt2(GPT2PreTrainedModel):
     def __init__(self,config):
         super(Quantizegpt2, self).__init__(config)
         self.gpt2 = model_prepared
-        
+
     def forward(self, input_ids,attention_mask,labels=None):
-        
+
         gpt2_output= self.gpt2(input_ids=input_ids,attention_mask=attention_mask)
         lm_logits = gpt2_output['logits']
         loss = None
@@ -469,8 +469,8 @@ optimizer = AdamW(model_prepared1.parameters(),
                   eps = epsilon
                 )
 total_steps = len(train_dataloader) * epochs
-scheduler = get_linear_schedule_with_warmup(optimizer, 
-                                            num_warmup_steps = warmup_steps, 
+scheduler = get_linear_schedule_with_warmup(optimizer,
+                                            num_warmup_steps = warmup_steps,
                                             num_training_steps = total_steps)
 def format_time(elapsed):
     return str(datetime.timedelta(seconds=int(round((elapsed)))))
@@ -482,8 +482,8 @@ optimizer1 = AdamW(model_prepared11.parameters(),
                   lr = learning_rate,
                   eps = epsilon
                 )
-scheduler1 = get_linear_schedule_with_warmup(optimizer1, 
-                                            num_warmup_steps = warmup_steps, 
+scheduler1 = get_linear_schedule_with_warmup(optimizer1,
+                                            num_warmup_steps = warmup_steps,
                                             num_training_steps = total_steps)
 disable_all(model_prepared11)
 device = 'cuda' if torch.cuda.is_available() else 'cpu'

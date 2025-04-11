@@ -1,5 +1,5 @@
-#------------------------------------------------------------------------------ 
-# Copyright (c) 2023, Intel Corporation - All rights reserved. 
+#------------------------------------------------------------------------------
+# Copyright (c) 2023, Intel Corporation - All rights reserved.
 # This file is part of FP8-Emulation-Toolkit
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -75,7 +75,7 @@ class FPEmuOp_cuda_per_tensor(Function):
     @staticmethod
     def symbolic(g, input, mode='NONE', inplace=False, scale=torch.tensor([1.0]), zero_point=torch.tensor([0.0]), quant_min=float(1.5258789E-05), quant_max=float(57344.0), blocknorm=False, blocksize=1):
 
-        output = g.op("Sophgo_custom::FPEmuOp_per_tensor", input, scale, zero_point, quant_min_f=quant_min, quant_max_f=quant_max)
+        output = g.op("xx_custom::FPEmuOp_per_tensor", input, scale, zero_point, quant_min_f=quant_min, quant_max_f=quant_max)
 
         input_shape = symbolic_helper._get_tensor_sizes(input)
         if input_shape is not None and hasattr(input.type(), 'with_sizes'):
@@ -86,7 +86,7 @@ class FPEmuOp_cuda_per_tensor(Function):
 
 def get_flt_max(mode):
     if mode.lower() == "e5m2":
-        return float(57344.0) 
+        return float(57344.0)
     elif mode.lower() == "e4m3":
         return float(448.0)
 
@@ -109,7 +109,7 @@ def _forward_per_channel(ctx, input, mode='NONE', inplace=False, scale=torch.ten
                 outputs = fpemu_cuda.forward(input._values().contiguous(), mode, size, inplace, scale, blocknorm, blocksize)
                 output = input
             else :
-                outputs = fpemu_cuda.forward(input._values().contiguous(), mode, size, inplace, scale, blocknorm, blocksize) 
+                outputs = fpemu_cuda.forward(input._values().contiguous(), mode, size, inplace, scale, blocknorm, blocksize)
                 output = torch.sparse.FloatTensor(input.indices(), outputs[0], input.size())
         else :
             # input = input.cpu()
@@ -158,7 +158,7 @@ class FPEmuOp_cuda_per_channel(Function):
 
     @staticmethod
     def symbolic(g, input, mode='NONE', inplace=False, scale=torch.tensor([1.0]), zero_point=torch.tensor([0.0]), quant_min=float(1.5258789E-05), quant_max=float(57344.0), blocknorm=False, blocksize=1):
-        output = g.op("Sophgo_custom::FPEmuOp_per_channel", input, scale, zero_point, quant_min_f=quant_min, quant_max_f=quant_max)
+        output = g.op("xx_custom::FPEmuOp_per_channel", input, scale, zero_point, quant_min_f=quant_min, quant_max_f=quant_max)
 
         input_shape = symbolic_helper._get_tensor_sizes(input)
         if input_shape is not None and hasattr(input.type(), 'with_sizes'):

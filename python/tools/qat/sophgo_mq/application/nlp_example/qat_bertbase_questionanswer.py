@@ -18,12 +18,12 @@ from transformers import default_data_collator
 from transformers.onnx.features import FeaturesManager
 from datasets import load_dataset,load_metric
 import torch.optim as optim
-from sophgo_mq.convert_deploy import convert_deploy
-from sophgo_mq.prepare_by_platform import prepare_by_platform
-from sophgo_mq.utils.state import enable_calibration, enable_quantization, disable_all
+from tt_mq.convert_deploy import convert_deploy
+from tt_mq.prepare_by_platform import prepare_by_platform
+from tt_mq.utils.state import enable_calibration, enable_quantization, disable_all
 from transformers import logging
 import matplotlib.pyplot as plt
-import torch.onnx 
+import torch.onnx
 import pandas as pd
 import collections
 from transformers import DistilBertConfig
@@ -32,7 +32,7 @@ from transformers import BertTokenizer, BertModel
 from transformers.utils.fx import HFTracer
 from transformers import Trainer, TrainingArguments, PreTrainedModel
 
-parser = argparse.ArgumentParser(description='sophgo_mq bertbase Training')
+parser = argparse.ArgumentParser(description='tt_mq bertbase Training')
 
 parser.add_argument('--epochs', default=2, type=int, metavar='N',
                     help='number of total epochs to run')
@@ -55,7 +55,7 @@ parser.add_argument('--aob', default='EMAQuantileObserver', type=str,
 parser.add_argument('--wfq', default='FixedFakeQuantize', type=str,
                     metavar='wfq', help='weight fakequantize')
 parser.add_argument('--afq', default='FixedFakeQuantize', type=str,
-                    metavar='afq', help='active fakequantize')                                         
+                    metavar='afq', help='active fakequantize')
 parser.add_argument('--backend', type=str, choices=['Academic_NLP', 'Tensorrt_NLP'], default='Academic_NLP')
 
 
@@ -133,7 +133,7 @@ def prepare_train_features(examples):
                 while offsets[token_end_index][1] >= end_char:
                     token_end_index -= 1
                 tokenized_examples["end_positions"].append(token_end_index + 1)
-   
+
     return tokenized_examples
 
 def prepare_validation_features(examples):
@@ -203,7 +203,7 @@ def postprocess_qa_predictions(examples, features, raw_predictions, n_best_size 
 
         min_null_score = None # Only used if squad_v2 is True.
         valid_answers = []
-        
+
         context = example["context"]
         # Looping through all the features associated to the current example.
         for feature_index in feature_indices:
@@ -219,7 +219,7 @@ def postprocess_qa_predictions(examples, features, raw_predictions, n_best_size 
             feature_null_score = start_logits[cls_index] + end_logits[cls_index]
             if min_null_score is None or min_null_score < feature_null_score:
                 min_null_score = feature_null_score
-           
+
             # Go through all possibilities for the `n_best_size` greater start and end logits.
             start_indexes = np.argsort(start_logits)[-1 : -n_best_size - 1 : -1].tolist()
             end_indexes = np.argsort(end_logits)[-1 : -n_best_size - 1 : -1].tolist()
@@ -252,7 +252,7 @@ def postprocess_qa_predictions(examples, features, raw_predictions, n_best_size 
             # In the very rare edge case we have not a single non-null prediction, we create a fake prediction to avoid
             # failure.
             best_answer = {"text": "", "score": 0.0}
-        
+
         # Let's pick our final answer: the best one or the null answer (only for squad_v2)
         if not squad_v2:
             predictions[example["id"]] = best_answer["text"]
@@ -270,7 +270,7 @@ def calibrate(cali_loader, model):
     with torch.no_grad():
         for i in range(len(cali_loader)):
             X= next(iter(cali_loader))
-            batch_input =X['input_ids'].to(device)  
+            batch_input =X['input_ids'].to(device)
             batch_seg = X['attention_mask'].to(device)
             batch_token=X['token_type_ids'].to(device)
             start_logits, end_logits = model(input_ids=batch_input,attention_mask=batch_seg,token_type_ids=batch_token)
@@ -294,7 +294,7 @@ def prec(datasets,trainer):
     features_per_example1 = collections.defaultdict(list)
     for i, feature in enumerate(features1):
         features_per_example1[example_id_to_index1[feature["example_id"]]].append(i)
-    
+
     final_predictions1 = postprocess_qa_predictions(datasets["validation"], validation_features1, raw_predictions1.predictions)
     metric = load_metric("squad_v2" if squad_v2 else "squad")
     if squad_v2:
@@ -415,7 +415,7 @@ class BertForQuestionAnswering(nn.Module):
         super().__init__()
         self.bert = model_prepared
         self.config = model_prepared.config
-        
+
     def forward(self, input_ids,
                 token_type_ids=None,
                 attention_mask=None,
@@ -427,9 +427,9 @@ class BertForQuestionAnswering(nn.Module):
             attention_mask=attention_mask)
         start_logits=bert_output['start_logits']
         end_logits=bert_output['end_logits']
-        start_logits = start_logits.squeeze(-1) 
-        end_logits = end_logits.squeeze(-1) 
-        
+        start_logits = start_logits.squeeze(-1)
+        end_logits = end_logits.squeeze(-1)
+
         if start_positions is not None and end_positions is not None:
             # 由于部分情况下start/end 位置会超过输入的长度
             # （例如输入序列的可能大于512，并且正确的开始或者结束符就在512之后）
@@ -449,7 +449,7 @@ class BertForQuestionAnswering(nn.Module):
             return (start_loss + end_loss) / 2, start_logits, end_logits
         else:
             return start_logits, end_logits
-model_prepared2=BertForQuestionAnswering(model_prepared)        
+model_prepared2=BertForQuestionAnswering(model_prepared)
 # 原始模型训练
 # model_prepared22=copy.deepcopy(model_prepared2)
 # disable_all(model_prepared22)
@@ -496,8 +496,8 @@ print("**************************************************")
 # convert_deploy(model_prepared,
 #             BackendType.Academic_NLP,
 #             dummy_input=((dict(X)),),
-#             model_name='bert-base-uncased-sophgo_mq-squad'
-#             ) 
+#             model_name='bert-base-uncased-tt_mq-squad'
+#             )
 
 model_kind, model_onnx_config = FeaturesManager.check_supported_model_or_raise(model_prepared, feature='default')
 onnx_config = model_onnx_config(model_prepared.config)

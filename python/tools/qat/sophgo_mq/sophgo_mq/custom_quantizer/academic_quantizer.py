@@ -3,12 +3,12 @@ from typing import List
 import torch
 from torch.fx import GraphModule
 from torch.quantization import propagate_qconfig_
-from sophgo_mq.utils import get_flattened_qconfig_dict
+from tt_mq.utils import get_flattened_qconfig_dict
 
-from sophgo_mq.utils import is_symmetric_quant, getitem2node
-from sophgo_mq.utils.logger import logger
-from sophgo_mq.utils.registry import register_model_quantizer
-from sophgo_mq.custom_quantizer import ModelQuantizer
+from tt_mq.utils import is_symmetric_quant, getitem2node
+from tt_mq.utils.logger import logger
+from tt_mq.utils.registry import register_model_quantizer
+from tt_mq.custom_quantizer import ModelQuantizer
 
 class AcademicQuantizer(ModelQuantizer):
     """Academic setting mostly do not merge BN and leave the first and last layer to higher bits.

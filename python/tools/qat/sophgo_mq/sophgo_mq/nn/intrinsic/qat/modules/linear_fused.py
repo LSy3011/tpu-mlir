@@ -8,7 +8,7 @@ from torch.nn import Linear
 from torch.nn.intrinsic import _FusedModule
 from torch.nn.parameter import Parameter
 
-from sophgo_mq.nn.intrinsic import LinearBn1d
+from tt_mq.nn.intrinsic import LinearBn1d
 
 
 class LinearBn1d(Linear, _FusedModule):
@@ -72,7 +72,7 @@ class LinearBn1d(Linear, _FusedModule):
     def freeze_bn_stats(self):
         self.freeze_bn = True
         self.bn.training = False
-        return self 
+        return self
 
     def _forward(self, input):
         assert self.bn.running_var is not None

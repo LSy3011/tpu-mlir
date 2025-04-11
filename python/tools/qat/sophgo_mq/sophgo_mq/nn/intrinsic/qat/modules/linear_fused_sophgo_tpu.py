@@ -8,11 +8,11 @@ from torch.nn import Linear
 from torch.nn.intrinsic import _FusedModule
 from torch.nn.parameter import Parameter
 
-from sophgo_mq.nn.intrinsic import LinearBn1d
+from tt_mq.nn.intrinsic import LinearBn1d
 import torch.nn.intrinsic as nni
 
 
-class LinearBn1d_sophgo(Linear, _FusedModule):
+class LinearBn1d_xx(Linear, _FusedModule):
     _version = 2
     _FLOAT_MODULE = LinearBn1d
 
@@ -73,7 +73,7 @@ class LinearBn1d_sophgo(Linear, _FusedModule):
     def freeze_bn_stats(self):
         self.freeze_bn = True
         self.bn.training = False
-        return self 
+        return self
 
     def bias_fake_quant(self, bias, scale_w, in_scale):
         if bias is not None:
@@ -88,7 +88,7 @@ class LinearBn1d_sophgo(Linear, _FusedModule):
 
     # def _forward(self, input):
     #     in_scale = self.input_fake_quantizer.scale #����һ��activation_fake_quant�ڵ��ȡscale
-    #     conv = F.linear(input, self.weight_fake_quant(self.weight), 
+    #     conv = F.linear(input, self.weight_fake_quant(self.weight),
     #         self.bias_fake_quant(self.bias, self.weight_fake_quant.scale, in_scale))
     #     return conv
 
@@ -114,14 +114,14 @@ class LinearBn1d_sophgo(Linear, _FusedModule):
         # Linear layer takes permuted input since the format is (batch_size, *, in_features)
         if self.bias is not None:
             zero_bias = torch.zeros_like(self.bias)
-            fc_bias = self.bias 
+            fc_bias = self.bias
         else:
             zero_bias = torch.zeros(self.out_channels, device=scaled_weight.device)
             fc_bias = torch.zeros_like(zero_bias, device=scaled_weight.device)
         if self.bn.affine:
-            full_bias = (fc_bias - self.bn.running_mean) / running_std * self.bn.weight + self.bn.bias 
+            full_bias = (fc_bias - self.bn.running_mean) / running_std * self.bn.weight + self.bn.bias
         else:
-            full_bias = (fc_bias - self.bn.running_mean) / running_std 
+            full_bias = (fc_bias - self.bn.running_mean) / running_std
         in_scale = self.input_fake_quantizer.scale #����һ��activation_fake_quant�ڵ��ȡscale
         fquant_bias = self.bias_fake_quant(full_bias, self.weight_fake_quant.scale, in_scale)
         linear_out = F.linear(input, scaled_weight, fquant_bias)
@@ -209,7 +209,7 @@ class LinearBn1d_sophgo(Linear, _FusedModule):
         qat_linearbn.bn.num_batches_tracked = bn.num_batches_tracked  # type: ignore[has-type]
         return qat_linearbn
 
-class Linear_sophgo(nn.Linear):
+class Linear_xx(nn.Linear):
     r"""
     A linear module attached with FakeQuantize modules for weight,
     used for quantization aware training.
@@ -293,7 +293,7 @@ class Linear_sophgo(nn.Linear):
         return linear
 
 
-class LinearReLU_sophgo(Linear_sophgo):
+class LinearReLU_xx(Linear_xx):
     r"""
     A LinearReLU module fused from Linear and ReLU modules, attached with
     FakeQuantize modules for weight, used in
@@ -319,14 +319,14 @@ class LinearReLU_sophgo(Linear_sophgo):
 
     def __init__(self, in_features, out_features, bias=True,
                  qconfig=None):
-        super(LinearReLU_sophgo, self).__init__(in_features, out_features, bias, qconfig)
+        super(LinearReLU_xx, self).__init__(in_features, out_features, bias, qconfig)
 
     def forward(self, input):
-        return F.relu(Linear_sophgo._forward(self, input))
+        return F.relu(Linear_xx._forward(self, input))
 
     @classmethod
     def from_float(cls, mod):
-        return super(LinearReLU_sophgo, cls).from_float(mod)
+        return super(LinearReLU_xx, cls).from_float(mod)
 
     def to_float(self):
         linear = torch.nn.Linear(self.in_features, self.out_features, self.bias is not None)

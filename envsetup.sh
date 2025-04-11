@@ -40,7 +40,7 @@ echo "PPL_INSTALL_PATH : ${PPL_INSTALL_PATH}"
 
 # other
 export CMODEL_LD_LIBRARY_PATH=$INSTALL_PATH/lib:$PROJECT_ROOT/capi/lib:$LD_LIBRARY_PATH
-export CHIP_LD_LIBRARY_PATH=/opt/sophon/libsophon-current/lib/:$INSTALL_PATH/lib:$PROJECT_ROOT/capi/lib:$LD_LIBRARY_PATH
+export CHIP_LD_LIBRARY_PATH=/opt/kk/libxx-current/lib/:$INSTALL_PATH/lib:$PROJECT_ROOT/capi/lib:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=$CMODEL_LD_LIBRARY_PATH
 export USING_CMODEL=True
 export PYTHONPATH=$INSTALL_PATH/python:$PYTHONPATH
@@ -80,7 +80,7 @@ function use_32ch() {
 
 # only used to build libatomic_exec_aarch64.so for soc_infer
 export CROSS_TOOLCHAINS=$PROJECT_ROOT/../bm_prebuilt_toolchains
-export LIBSOPHON_ROOT=$PROJECT_ROOT/../libsophon
+export libxx_ROOT=$PROJECT_ROOT/../libxx
 function rebuild_atomic_exec_alone() {
     export ATOMIC_EXEC_ALONE=1
     if [ -z "$USE_CROSS_TOOLCHAINS" ]; then

@@ -1,7 +1,7 @@
 Team AP0200008
 =====================
 
-Sophgo TPU programming competition Top1 code sample.
+xx TPU programming competition Top1 code sample.
 
 Note: This sample is for future entrants’ reference only. Origin model, test image and calibration should be prepared by yourselves.
 

@@ -16,7 +16,7 @@ endif()
 # Add include directories and set build type
 include_directories($ENV{PROJECT_ROOT}/third_party/nntoolchain/include)
 include_directories($ENV{PROJECT_ROOT}/third_party/customlayer/include/kernel)
-link_directories($ENV{LIBSOPHON_ROOT}/tpu-runtime/build_thirdparty/lib)
+link_directories($ENV{libxx_ROOT}/tpu-runtime/build_thirdparty/lib)
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
 set(CMAKE_BUILD_TYPE Debug)
 

@@ -4,17 +4,17 @@ import os
 import yaml
 from easydict import EasyDict
 import torch
-from sophgo_mq.utils import is_symmetric_quant
+from tt_mq.utils import is_symmetric_quant
 from .quantize_base import QuantizeBase
 from ..utils.hook import PerChannelLoadHook
-from tools.qat.sophgo_mq.FP8_Emulator.pytquant.cpp import fpemu_cpp
+from tools.qat.tt_mq.FP8_Emulator.pytquant.cpp import fpemu_cpp
 if torch.cuda.is_available():
-    from tools.qat.sophgo_mq.FP8_Emulator.pytquant.cuda import fpemu_cuda
+    from tools.qat.tt_mq.FP8_Emulator.pytquant.cuda import fpemu_cuda
 
 _version_under_1100 = int(torch.__version__.split('.')[1]) < 10
 # List the supported rounding method for E5M2:
 mode_list = ["E5M2_RTE", "E5M2_RNE", "E5M2_STOCHASTIC", "E5M2_RNAZ",
-             "E5M2_RNTZ", "E5M2_RPINF", "E5M2_RNINF", "E5M2_DAZ_RNE", 
+             "E5M2_RNTZ", "E5M2_RPINF", "E5M2_RNINF", "E5M2_DAZ_RNE",
              "E5M2_DAZ_STOCHASITC", "E5M2_DAZ_RNAZ", "E5M2_DAZ_RNTZ"]
 # Get the config
 def parse_config(config_file):
@@ -36,10 +36,10 @@ def parse_config(config_file):
 
 def get_flt_max(mode):
     if mode.lower() == "e5m2":
-        return float(57344.0) 
+        return float(57344.0)
     elif mode.lower() == "e4m3":
         return float(448.0)
-    
+
 def get_flt_min(mode):
     if mode.lower() =="e5m2":
         return float(1.5258789E-05) # Min Subnormal
@@ -57,7 +57,7 @@ def quantize_to_integer(tensor, mode, inplace=False):
     if mode == "INT4":
         q_min = -8
         q_max = 7
-    # compute scale and zero_point 
+    # compute scale and zero_point
     scale = (max_val - min_val) / (q_max - q_min)
     zero_point = q_min - (min_val / scale)
     # Quantize the input tensor using int8 representation
@@ -70,7 +70,7 @@ def quantize_to_integer(tensor, mode, inplace=False):
     if inplace is True:
         tensor.data.copy_(dqtensor)
         return tensor
-    
+
     return dqtensor
 
 # The function below excuted the FP8 quantization
@@ -114,7 +114,7 @@ class E5M2FakeQuantize(QuantizeBase):
                 if abs(mean) > 0.0:
                     _scale = get_flt_min("e5m2") / abs(mean)
             elif scaling_method.lower() == "max":
-                vmax = torch.max(abs(torch.flatten(X.detach()))) 
+                vmax = torch.max(abs(torch.flatten(X.detach())))
                 _scale = vmax / get_flt_max("e5m2")
                 _scale = torch.tensor(6.55e+04) if _scale.item() > 3.275e+04 else _scale
             else:
@@ -157,7 +157,7 @@ class E5M2FakeQuantize(QuantizeBase):
                 # Temporarily fix the scale to 1.0 to match the implement in tpu-mlir
                 X = fpemu_device_fn(X, mode=work_mode, inplace=False, scale=scale_fixed, zero_point=self.zero_point, quant_min=quant_min, quant_max=quant_max, is_per_channel=False)
         return X
- 
+
     @torch.jit.export
     def extra_repr(self):
         return 'fake_quant_enabled={}, observer_enabled={}, ' \
@@ -165,7 +165,7 @@ class E5M2FakeQuantize(QuantizeBase):
                'scale={}, zero_point={}'.format(
                    self.fake_quant_enabled, self.observer_enabled,
                    self.quant_min, self.quant_max,
-                   self.dtype, self.qscheme, self.ch_axis, self.scale if self.ch_axis == -1 else 'List', 
+                   self.dtype, self.qscheme, self.ch_axis, self.scale if self.ch_axis == -1 else 'List',
                    self.zero_point if self.ch_axis == -1 else 'List')
 
     def _save_to_state_dict(self, destination, prefix, keep_vars):
@@ -203,6 +203,6 @@ class E5M2FakeQuantize(QuantizeBase):
                         self.zero_point.copy_(val)
             elif strict:
                 missing_keys.append(key)
-    
+
         super(E5M2FakeQuantize, self)._load_from_state_dict(state_dict, prefix, local_metadata, strict,
                                                              missing_keys, unexpected_keys, error_msgs)

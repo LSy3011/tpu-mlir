@@ -9,7 +9,7 @@
 #
 # ==============================================================================
 # @Time    : 2023/7/18 16:29
-# @Author  : chongqing.zeng@sophgo.com
+
 # @Project: PerfAI
 import os
 import shutil

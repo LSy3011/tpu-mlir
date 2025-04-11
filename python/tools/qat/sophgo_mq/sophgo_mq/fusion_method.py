@@ -10,15 +10,15 @@ def _parent_name(target):
     else:
         return r[0], r[1]
 
-import sophgo_mq.nn.intrinsic as qnni
-import sophgo_mq.nn.intrinsic.qat as qnniqat
-import sophgo_mq.nn.qat as qnnqat
-from sophgo_mq.utils.registry import register_convert_function
-from sophgo_mq.fuser_method_mappings import fuse_deconv_bn_eval
-from sophgo_mq.quantization.default_bias_fake_quant import bias_fake_quantizer
+import tt_mq.nn.intrinsic as qnni
+import tt_mq.nn.intrinsic.qat as qnniqat
+import tt_mq.nn.qat as qnnqat
+from tt_mq.utils.registry import register_convert_function
+from tt_mq.fuser_method_mappings import fuse_deconv_bn_eval
+from tt_mq.quantization.default_bias_fake_quant import bias_fake_quantizer
 
 
-@register_convert_function(qnniqat.Linear_sophgo)
+@register_convert_function(qnniqat.Linear_xx)
 def convert_qnniqat_linear(model, fused_node):
     modules = dict(model.named_modules())
     fused_module = modules[fused_node.target]
@@ -35,12 +35,12 @@ def convert_qnniqat_linear(model, fused_node):
     linear_parent_name, linear_name = _parent_name(fused_node.target)
     setattr(modules[linear_parent_name], linear_name, linear)
 
-@register_convert_function(qnnqat.Conv2d_sophgo)
+@register_convert_function(qnnqat.Conv2d_xx)
 def convert_qnnqat_conv2d(model, fused_node):
     modules = dict(model.named_modules())
     fused_module = modules[fused_node.target]
     # Create a Conv2d from FusedModule.
-    conv = torch.nn.Conv2d(fused_module.in_channels, fused_module.out_channels, fused_module.kernel_size, 
+    conv = torch.nn.Conv2d(fused_module.in_channels, fused_module.out_channels, fused_module.kernel_size,
                            fused_module.stride, fused_module.padding, fused_module.dilation,
                            fused_module.groups, fused_module.bias is not None, fused_module.padding_mode)
     conv.weight = fused_module.weight
@@ -54,15 +54,15 @@ def convert_qnnqat_conv2d(model, fused_node):
     conv_parent_name, conv_name = _parent_name(fused_node.target)
     setattr(modules[conv_parent_name], conv_name, conv)
 
-@register_convert_function(qnnqat.ConvTranspose2d_sophgo)
+@register_convert_function(qnnqat.ConvTranspose2d_xx)
 def convert_qnnqat_deconv2d(model, fused_node):
     modules = dict(model.named_modules())
     fused_module = modules[fused_node.target]
-    deconv = torch.nn.ConvTranspose2d(fused_module.in_channels, fused_module.out_channels, fused_module.kernel_size, 
+    deconv = torch.nn.ConvTranspose2d(fused_module.in_channels, fused_module.out_channels, fused_module.kernel_size,
                                       stride=fused_module.stride, padding=fused_module.padding, output_padding=fused_module.output_padding,
-                                      groups=fused_module.groups, bias=fused_module.bias is not None, 
+                                      groups=fused_module.groups, bias=fused_module.bias is not None,
                                       dilation=fused_module.dilation,
-                                      padding_mode=fused_module.padding_mode) 
+                                      padding_mode=fused_module.padding_mode)
     deconv.weight = fused_module.weight
     if fused_module.bias is not None:
         deconv.bias = fused_module.bias
@@ -73,7 +73,7 @@ def convert_qnnqat_deconv2d(model, fused_node):
     deconv_parent_name, deconv_name = _parent_name(fused_node.target)
     setattr(modules[deconv_parent_name], deconv_name, fused_deconv)
 
-@register_convert_function(qnniqat.LinearReLU_sophgo)
+@register_convert_function(qnniqat.LinearReLU_xx)
 def linearert_qnniqat_linearrelu(model, fused_node):
     convert_qnniqat_linear(model, fused_node)
     modules = dict(model.named_modules())
@@ -83,7 +83,7 @@ def linearert_qnniqat_linearrelu(model, fused_node):
     relu_name = 'relu'
     # Maybe has another name, but we cannot know for now.
     if not hasattr(modules[linear_parent_name], relu_name):
-        setattr(modules[linear_parent_name], relu_name, 
+        setattr(modules[linear_parent_name], relu_name,
                 torch.nn.ReLU(inplace=True).train(fused_module.training))
     # Update modules.
     modules = dict(model.named_modules())
@@ -112,7 +112,7 @@ def convert_qnni_linearbn(model, fused_node):
 
 
 @register_convert_function(qnniqat.LinearBn1d)
-@register_convert_function(qnniqat.LinearBn1d_sophgo)
+@register_convert_function(qnniqat.LinearBn1d_xx)
 def convert_qnniqat_linearbn(model, fused_node):
     modules = dict(model.named_modules())
     fused_module = modules[fused_node.target]
@@ -135,7 +135,7 @@ def convert_qnniqat_linearbn(model, fused_node):
 @register_convert_function(qnniqat.ConvFreezebn2d)
 @register_convert_function(nniqat.ConvBn2d)
 @register_convert_function(nniqat.ConvBn3d)
-@register_convert_function(qnniqat.ConvBn2d_sophgo)
+@register_convert_function(qnniqat.ConvBn2d_xx)
 def convert_nniqat_convbn(model, fused_node):
     """nniqat.ConvBn2d ----> nn.Conv2d ----> nniqat.Conv2d
     """
@@ -146,8 +146,8 @@ def convert_nniqat_convbn(model, fused_node):
         nniqat.ConvBnReLU2d: torch.nn.Conv2d,
         nniqat.ConvBn3d: torch.nn.Conv3d,
         nniqat.ConvBnReLU3d: torch.nn.Conv3d,
-        qnniqat.ConvBn2d_sophgo: torch.nn.Conv2d,
-        qnniqat.ConvBnReLU2d_sophgo: torch.nn.Conv2d,
+        qnniqat.ConvBn2d_xx: torch.nn.Conv2d,
+        qnniqat.ConvBnReLU2d_xx: torch.nn.Conv2d,
     }
     fused_qat_module_class_map = {
         torch.nn.Conv2d: torch.nn.qat.Conv2d,
@@ -177,8 +177,8 @@ def convert_nniqat_convbn(model, fused_node):
 @register_convert_function(qnniqat.ConvFreezebnReLU2d)
 @register_convert_function(nniqat.ConvBnReLU2d)
 @register_convert_function(nniqat.ConvBnReLU3d)
-@register_convert_function(qnniqat.ConvBnReLU2d_sophgo)
-def convert_nniqat_convbnrelu(model, fused_node):    
+@register_convert_function(qnniqat.ConvBnReLU2d_xx)
+def convert_nniqat_convbnrelu(model, fused_node):
     convert_nniqat_convbn(model, fused_node)
     modules = dict(model.named_modules())
     fused_module = modules[fused_node.target]
@@ -187,7 +187,7 @@ def convert_nniqat_convbnrelu(model, fused_node):
     relu_name = 'relu'
     # Maybe has another name, but we cannot know for now.
     if not hasattr(modules[conv_parent_name], relu_name):
-        setattr(modules[conv_parent_name], relu_name, 
+        setattr(modules[conv_parent_name], relu_name,
                 torch.nn.ReLU(inplace=True).train(fused_module.training))
     # Update modules.
     modules = dict(model.named_modules())
@@ -206,8 +206,8 @@ def convert_nniqat_convbnrelu(model, fused_node):
     model.recompile()
     model.graph.lint()
 
-@register_convert_function(qnniqat.ConvReLU2d_sophgo)
-def convert_nniqat_convrelu(model, fused_node):    
+@register_convert_function(qnniqat.ConvReLU2d_xx)
+def convert_nniqat_convrelu(model, fused_node):
     convert_qnnqat_conv2d(model, fused_node)
     modules = dict(model.named_modules())
     fused_module = modules[fused_node.target]
@@ -216,7 +216,7 @@ def convert_nniqat_convrelu(model, fused_node):
     relu_name = 'relu'
     # Maybe has another name, but we cannot know for now.
     if not hasattr(modules[conv_parent_name], relu_name):
-        setattr(modules[conv_parent_name], relu_name, 
+        setattr(modules[conv_parent_name], relu_name,
                 torch.nn.ReLU(inplace=True).train(fused_module.training))
     # Update modules.
     modules = dict(model.named_modules())
@@ -243,11 +243,11 @@ def convert_qnni_deconvbn(model, fused_node):
     fused_module_deconv = fused_module[0]
     fused_module_bn = fused_module[1]
     # Create a ConvTranspose2d from FusedModule.
-    deconv = torch.nn.ConvTranspose2d(fused_module_deconv.in_channels, fused_module_deconv.out_channels, fused_module_deconv.kernel_size, 
+    deconv = torch.nn.ConvTranspose2d(fused_module_deconv.in_channels, fused_module_deconv.out_channels, fused_module_deconv.kernel_size,
                                       stride=fused_module_deconv.stride, padding=fused_module_deconv.padding, output_padding=fused_module_deconv.output_padding,
-                                      groups=fused_module_deconv.groups, bias=fused_module_deconv.bias is not None, 
+                                      groups=fused_module_deconv.groups, bias=fused_module_deconv.bias is not None,
                                       dilation=fused_module_deconv.dilation,
-                                      padding_mode=fused_module_deconv.padding_mode) 
+                                      padding_mode=fused_module_deconv.padding_mode)
     deconv.weight = fused_module_deconv.weight
     if fused_module_deconv.bias is not None:
         deconv.bias = fused_module_deconv.bias
@@ -258,16 +258,16 @@ def convert_qnni_deconvbn(model, fused_node):
 
 @register_convert_function(qnniqat.ConvTransposeFreezebn2d)
 @register_convert_function(qnniqat.ConvTransposeBn2d)
-@register_convert_function(qnniqat.ConvTransposeBn2d_sophgo)
+@register_convert_function(qnniqat.ConvTransposeBn2d_xx)
 def convert_qnniqat_deconvbn(model, fused_node):
     modules = dict(model.named_modules())
     fused_module = modules[fused_node.target]
     # Create a ConvTranspose2d from FusedModule.
-    deconv = torch.nn.ConvTranspose2d(fused_module.in_channels, fused_module.out_channels, fused_module.kernel_size, 
+    deconv = torch.nn.ConvTranspose2d(fused_module.in_channels, fused_module.out_channels, fused_module.kernel_size,
                                       stride=fused_module.stride, padding=fused_module.padding, output_padding=fused_module.output_padding,
-                                      groups=fused_module.groups, bias=fused_module.bias is not None, 
+                                      groups=fused_module.groups, bias=fused_module.bias is not None,
                                       dilation=fused_module.dilation,
-                                      padding_mode=fused_module.padding_mode) 
+                                      padding_mode=fused_module.padding_mode)
     deconv.weight = fused_module.weight
     if fused_module.bias is not None:
         deconv.bias = fused_module.bias
@@ -283,7 +283,7 @@ def convert_qnniqat_deconvbn(model, fused_node):
 
 @register_convert_function(qnni.ConvTransposeFreezebnReLU2d)
 @register_convert_function(qnni.ConvTransposeBnReLU2d)
-@register_convert_function(qnniqat.ConvTransposeBnReLU2d_sophgo)
+@register_convert_function(qnniqat.ConvTransposeBnReLU2d_xx)
 def convert_qnni_deconvbnrelu(model, fused_node):
     convert_qnni_deconvbn(model, fused_node)
     modules = dict(model.named_modules())
@@ -312,7 +312,7 @@ def convert_qnni_deconvbnrelu(model, fused_node):
 
 @register_convert_function(qnniqat.ConvTransposeFreezebnReLU2d)
 @register_convert_function(qnniqat.ConvTransposeBnReLU2d)
-@register_convert_function(qnniqat.ConvTransposeBnReLU2d_sophgo)
+@register_convert_function(qnniqat.ConvTransposeBnReLU2d_xx)
 def convert_qnniqat_deconvbnrelu(model, fused_node):
     convert_qnniqat_deconvbn(model, fused_node)
     modules = dict(model.named_modules())
@@ -341,13 +341,13 @@ def convert_qnniqat_deconvbnrelu(model, fused_node):
 
 @register_convert_function(qnniqat.ConvBn2d)
 def convert_qnniqat_convbn(model, fused_node):
-    """sophgo_mq.nn.intrinsic.qat module add bias quant.
+    """tt_mq.nn.intrinsic.qat module add bias quant.
     That is the difference between torch.nn.intrinsic.qat module.
     """
     modules = dict(model.named_modules())
     fused_module = modules[fused_node.target]
     # Create a Conv2d from FusedModule.
-    conv = torch.nn.Conv2d(fused_module.in_channels, fused_module.out_channels, fused_module.kernel_size, 
+    conv = torch.nn.Conv2d(fused_module.in_channels, fused_module.out_channels, fused_module.kernel_size,
                            fused_module.stride, fused_module.padding, fused_module.dilation,
                            fused_module.groups, fused_module.bias is not None, fused_module.padding_mode)
     conv.weight = fused_module.weight
@@ -370,7 +370,7 @@ def convert_qnniqat_convbn(model, fused_node):
 
 @register_convert_function(qnniqat.ConvBnReLU2d)
 def convert_qnniqat_convbnrelu(model, fused_node):
-    """sophgo_mq.nn.intrinsic.qat module add bias quant.
+    """tt_mq.nn.intrinsic.qat module add bias quant.
     That is the difference between torch.nn.intrinsic.qat module.
     """
     convert_qnniqat_convbn(model, fused_node)
@@ -381,7 +381,7 @@ def convert_qnniqat_convbnrelu(model, fused_node):
     relu_name = 'relu'
     # Maybe has another name, but we cannot know for now.
     if not hasattr(modules[conv_parent_name], relu_name):
-        setattr(modules[conv_parent_name], relu_name, 
+        setattr(modules[conv_parent_name], relu_name,
                 torch.nn.ReLU(inplace=True).train(fused_module.training))
     # Update modules.
     modules = dict(model.named_modules())

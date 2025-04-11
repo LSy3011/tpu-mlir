@@ -9,7 +9,7 @@
 #
 # ==============================================================================
 # @Time    : 2023/8/22 9:59
-# @Author  : chongqing.zeng@sophgo.com
+
 # @Project: PerfAI
 import ctypes as ct
 from enum import Enum

@@ -18,6 +18,6 @@ Paramter5: reference.npz, compared with the debug output.npz.
 
 Paramter6: tolerance, default as 0.99,0.99.
 
-The detailed introduction can be acquired here:(https://wiki.sophgo.com/pages/viewpage.action?pageId=93259225)
+The detailed introduction can be acquired here:(https://wiki.xx.com/pages/viewpage.action?pageId=93259225)
 
 

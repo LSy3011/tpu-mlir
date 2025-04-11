@@ -4,12 +4,12 @@ import os
 import yaml
 from easydict import EasyDict
 import torch
-from sophgo_mq.utils import is_symmetric_quant
+from tt_mq.utils import is_symmetric_quant
 from .quantize_base import QuantizeBase
 from ..utils.hook import PerChannelLoadHook
-from tools.qat.sophgo_mq.FP8_Emulator.pytquant.cpp import fpemu_cpp
+from tools.qat.tt_mq.FP8_Emulator.pytquant.cpp import fpemu_cpp
 if torch.cuda.is_available():
-    from tools.qat.sophgo_mq.FP8_Emulator.pytquant.cuda import fpemu_cuda
+    from tools.qat.tt_mq.FP8_Emulator.pytquant.cuda import fpemu_cuda
 
 _version_under_1100 = int(torch.__version__.split('.')[1]) < 10
 # List the supported rounding method for E4M3:
@@ -42,13 +42,13 @@ def get_flt_min(mode):
     if mode.lower() =="e5m2":
         return float(1.5258789E-05) # Min Subnormal
     elif mode.lower() == "e4m3":
-        return float(1.9531250E-03) 
+        return float(1.9531250E-03)
 
 def quantize_to_integer(tensor, mode, inplace=False):
     # compute tensor min and max values
     min_val = torch.min(tensor)
     max_val = torch.max(tensor)
-    # int8 quantization range 
+    # int8 quantization range
 
     nbits = int(mode.split("INT")[1])-1
     q_min = -1*2**nbits
@@ -58,7 +58,7 @@ def quantize_to_integer(tensor, mode, inplace=False):
     if mode == "INT4":
         q_min = -8
         q_max = 7
-    # compute scale and zero_point 
+    # compute scale and zero_point
     scale = (max_val - min_val) / (q_max - q_min)
     zero_point = q_min - (min_val / scale)
     # Quantize the input tensor using int8 representation
@@ -71,7 +71,7 @@ def quantize_to_integer(tensor, mode, inplace=False):
     if inplace is True:
         tensor.data.copy_(dqtensor)
         return tensor
-    
+
     return dqtensor
 
 def fpemu_device_fn(tensor, mode, inplace=True, scale=1.0, zero_point=0.0, quant_min=float(1.5258789E-05), quant_max=float(57344.0), is_per_channel=True):
@@ -112,7 +112,7 @@ class E4M3FakeQuantize(QuantizeBase):
                 mean = torch.mean(abs(torch.flatten(X.detach())))
                 mean = abs(mean) if abs(mean) > 1e-5 else get_flt_min("e4m3")
                 if abs(mean) > 0.0:
-                    _scale = get_flt_min("e4m3") / abs(mean) 
+                    _scale = get_flt_min("e4m3") / abs(mean)
             elif scaling_method.lower() == "max":
                 vmax = torch.max(abs(torch.flatten(X.detach())))
                 _scale = vmax / get_flt_max("e4m3")
@@ -153,7 +153,7 @@ class E4M3FakeQuantize(QuantizeBase):
             else: # per-tensor
                 X = fpemu_device_fn(X, mode=work_mode, inplace=False, scale=scale_fixed, zero_point=self.zero_point, quant_min=quant_min, quant_max=quant_max, is_per_channel=False)
         return X
- 
+
     @torch.jit.export
     def extra_repr(self):
         return 'fake_quant_enabled={}, observer_enabled={}, ' \
@@ -161,7 +161,7 @@ class E4M3FakeQuantize(QuantizeBase):
                'scale={}, zero_point={}'.format(
                    self.fake_quant_enabled, self.observer_enabled,
                    self.quant_min, self.quant_max,
-                   self.dtype, self.qscheme, self.ch_axis, self.scale if self.ch_axis == -1 else 'List', 
+                   self.dtype, self.qscheme, self.ch_axis, self.scale if self.ch_axis == -1 else 'List',
                    self.zero_point if self.ch_axis == -1 else 'List')
 
     def _save_to_state_dict(self, destination, prefix, keep_vars):
@@ -199,6 +199,6 @@ class E4M3FakeQuantize(QuantizeBase):
                         self.zero_point.copy_(val)
             elif strict:
                 missing_keys.append(key)
-    
+
         super(E4M3FakeQuantize, self)._load_from_state_dict(state_dict, prefix, local_metadata, strict,
                                                              missing_keys, unexpected_keys, error_msgs)

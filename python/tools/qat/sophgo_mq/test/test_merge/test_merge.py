@@ -1,9 +1,9 @@
 import torch
 import unittest
 
-from sophgo_mq.prepare_by_platform import prepare_by_platform, BackendType
-from sophgo_mq.convert_deploy import convert_merge_bn
-from sophgo_mq.utils.state import enable_calibration, enable_quantization
+from tt_mq.prepare_by_platform import prepare_by_platform, BackendType
+from tt_mq.convert_deploy import convert_merge_bn
+from tt_mq.utils.state import enable_calibration, enable_quantization
 
 from ..version import GITHUB_RES
 
@@ -51,7 +51,7 @@ class TestMergeBN(unittest.TestCase):
 
         class TestDeConv(torch.nn.Module):
             '''
-            Test code from 
+            Test code from
                 https://github.com/pgtgrly/Convolution-Deconvolution-Network-Pytorch
             '''
             def __init__(self):

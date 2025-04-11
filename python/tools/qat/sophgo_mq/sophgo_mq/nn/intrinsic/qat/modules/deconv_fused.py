@@ -10,8 +10,8 @@ from torch.nn.modules.utils import _pair, _single
 
 from typing import TypeVar
 
-import sophgo_mq.nn.intrinsic as qnni
-import sophgo_mq.nn.qat as qnnqat
+import tt_mq.nn.intrinsic as qnni
+import tt_mq.nn.qat as qnnqat
 
 
 _BN_CLASS_MAP = {

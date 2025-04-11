@@ -10,9 +10,9 @@ from torch.fx.graph_module import GraphModule
 from torch.quantization.quantize_fx import _swap_ff_with_fxff
 from torch.quantization import QConfig
 import torch.nn.intrinsic as nni
-import sophgo_mq.nn.intrinsic as qnni
+import tt_mq.nn.intrinsic as qnni
 
-from sophgo_mq.fake_quantize import (
+from tt_mq.fake_quantize import (
     LearnableFakeQuantize,
     NNIEFakeQuantize,
     FixedFakeQuantize,
@@ -32,7 +32,7 @@ from sophgo_mq.fake_quantize import (
     Fp16FakeQuantize,
     BF16FakeQuantize
 )
-from sophgo_mq.observer import (
+from tt_mq.observer import (
     ClipStdObserver,
     LSQObserver,
     MinMaxFloorObserver,
@@ -44,12 +44,12 @@ from sophgo_mq.observer import (
     EMAMSEObserver,
     KLDObserver,
 )
-import sophgo_mq
-from sophgo_mq.fuser_method_mappings import fuse_custom_config_dict
-from sophgo_mq.utils.logger import logger
-from sophgo_mq.utils.registry import DEFAULT_MODEL_QUANTIZER
-from sophgo_mq.scheme import QuantizeScheme
-import sophgo_mq.nn.intrinsic.qat as qnniqat
+import tt_mq
+from tt_mq.fuser_method_mappings import fuse_custom_config_dict
+from tt_mq.utils.logger import logger
+from tt_mq.utils.registry import DEFAULT_MODEL_QUANTIZER
+from tt_mq.scheme import QuantizeScheme
+import tt_mq.nn.intrinsic.qat as qnniqat
 
 __all__ = ['prepare_by_platform']
 
@@ -302,7 +302,7 @@ def get_qconfig_by_platform(quant_dict:Dict,extra_qparams: Dict):
 
     qconfig = {'': QConfig(activation=a_qconfig, weight=w_qconfig)}
 
-    # qconfig["object_type"] = {torch.nn.Linear:createQConfigForSophgo_weight()} #int8 qat, Sophgo_TPU use sym per-layer
+    # qconfig["object_type"] = {torch.nn.Linear:createQConfigForxx_weight()} #int8 qat, xx_tpu use sym per-layer
     object_type = extra_qparams.get('object_type', None)
     if object_type:
         if "object_type" not in qconfig:
@@ -313,11 +313,11 @@ def get_qconfig_by_platform(quant_dict:Dict,extra_qparams: Dict):
             if mode=="activation":
                 afq=object_type.get(type_name,{}).get("afakequantize")
                 aob=object_type.get(type_name,{}).get("aobserver")
-                qconfig['object_type'][type_name]=createQConfigForSophgo_activation(bit_num = bit, a_fakequantize = afq, a_observer = aob)
+                qconfig['object_type'][type_name]=createQConfigForxx_activation(bit_num = bit, a_fakequantize = afq, a_observer = aob)
             elif mode=="weight":
                 wfq=object_type.get(type_name,{}).get("wfakequantize")
                 wob=object_type.get(type_name,{}).get("wobserver")
-                qconfig['object_type'][type_name]=createQConfigForSophgo_weight(chip, bit_num = bit, w_fakequantize = wfq, w_observer = wob)
+                qconfig['object_type'][type_name]=createQConfigForxx_weight(chip, bit_num = bit, w_fakequantize = wfq, w_observer = wob)
             else:
                 raise ValueError(f'无效的模式: {mode}。模式应该是 "activation" 或 "weight"。')
     # if object_type is not None:
@@ -336,11 +336,11 @@ def get_qconfig_by_platform(quant_dict:Dict,extra_qparams: Dict):
             if mode=="activation":
                 afq=module_name.get(type_name,{}).get("afakequantize")
                 aob=module_name.get(type_name,{}).get("aobserver")
-                qconfig["module_name"][type_name]=createQConfigForSophgo_activation(bit_num = bit, a_fakequantize = afq, a_observer = aob)
+                qconfig["module_name"][type_name]=createQConfigForxx_activation(bit_num = bit, a_fakequantize = afq, a_observer = aob)
             elif mode=="weight":
                 wfq=module_name.get(type_name,{}).get("wfakequantize")
                 wob=module_name.get(type_name,{}).get("wobserver")
-                qconfig["module_name"][type_name]=createQConfigForSophgo_weight(chip, bit_num = bit, w_fakequantize = wfq, w_observer = wob)
+                qconfig["module_name"][type_name]=createQConfigForxx_weight(chip, bit_num = bit, w_fakequantize = wfq, w_observer = wob)
             else:
                 raise ValueError(f'无效的模式: {mode}。模式应该是 "activation" 或 "weight"。')
 
@@ -451,20 +451,20 @@ def chipparams(chip,extra_qparams,FakeQuantize):
         a_fakequantize = FakeQuantize[a_fakequantize]
     chip_params = ParamsTable[chip]
     return chip_params,w_observer,a_observer,w_fakequantize,a_fakequantize
-def createQConfigForSophgo_activation(bit_num = 4, a_fakequantize = 'LearnableFakeQuantize', a_observer = 'MinMaxObserver', a_fakeq_params = {}, a_observer_extra_args = {}):
+def createQConfigForxx_activation(bit_num = 4, a_fakequantize = 'LearnableFakeQuantize', a_observer = 'MinMaxObserver', a_fakeq_params = {}, a_observer_extra_args = {}):
     a_observer = ObserverDict[a_observer]
     a_fakequantize = FakeQuantizeDict[a_fakequantize]
-    a_qscheme = QuantizeScheme(symmetry=True, per_channel=False, pot_scale=False, bit=bit_num) #Sophgo_TPU use sym per-layer
+    a_qscheme = QuantizeScheme(symmetry=True, per_channel=False, pot_scale=False, bit=bit_num) #xx_tpu use sym per-layer
     a_qscheme.kwargs.update(a_observer_extra_args)
     a_qconfig = a_fakequantize.with_args(observer=a_observer, **a_fakeq_params, **a_qscheme.to_observer_params())
     return QConfig(activation=a_qconfig, weight=None)
-def createQConfigForSophgo_weight(chip, bit_num = 4, w_fakequantize = 'FixedFakeQuantize', w_observer = 'MinMaxObserver', w_fakeq_params = {}, w_observer_extra_args = {}):
+def createQConfigForxx_weight(chip, bit_num = 4, w_fakequantize = 'FixedFakeQuantize', w_observer = 'MinMaxObserver', w_fakeq_params = {}, w_observer_extra_args = {}):
     w_observer = ObserverDict[w_observer]
     w_fakequantize = FakeQuantizeDict[w_fakequantize]
     sym_range = False
     if chip in ['MARS3', 'CV183X', 'CV182X', 'CV181X', 'CV180X', 'CV186X', 'SGTPUV8']:
         sym_range = True
-    w_qscheme = QuantizeScheme(symmetry=True, per_channel=False, pot_scale=False, bit=bit_num, symmetric_range = sym_range) #Sophgo_TPU use sym per-layer
+    w_qscheme = QuantizeScheme(symmetry=True, per_channel=False, pot_scale=False, bit=bit_num, symmetric_range = sym_range) #xx_tpu use sym per-layer
     w_qscheme.kwargs.update(w_observer_extra_args)
     w_qconfig = w_fakequantize.with_args(observer=w_observer, **w_fakeq_params, **w_qscheme.to_observer_params())
     return QConfig(activation=torch.nn.Identity, weight=w_qconfig) #activation use global quant conifg
@@ -492,7 +492,7 @@ def createQConfig(w_fakequantize = 'LearnableFakeQuantize', a_fakequantize = 'Le
     a_qconfig = a_fakequantize.with_args(observer=a_observer, **a_fakeq_params, **a_qscheme.to_observer_params())
     return QConfig(activation=a_qconfig, weight=w_qconfig)
 
-def createQConfigForInt4SophgoLiner(w_fakequantize = 'LearnableFakeQuantize', a_fakequantize = 'LearnableFakeQuantize',
+def createQConfigForInt4XXLiner(w_fakequantize = 'LearnableFakeQuantize', a_fakequantize = 'LearnableFakeQuantize',
                 w_observer = 'MinMaxObserver', a_observer = 'EMAMinMaxObserver', w_qscheme = {}, a_qscheme = {},
                 w_fakeq_params = {}, a_fakeq_params = {}, w_observer_extra_args = {}, a_observer_extra_args = {}):
     w_observer = ObserverDict[w_observer]
@@ -647,7 +647,7 @@ def prepare_by_platform(
     extra_fuse_dict = prepare_custom_config_dict.get('extra_fuse_dict', {})
     extra_fuse_dict.update(fuse_custom_config_dict)
     # Prepare
-    import sophgo_mq.custom_quantizer  # noqa: F401
+    import tt_mq.custom_quantizer  # noqa: F401
     extra_quantizer_dict = prepare_custom_config_dict.get('extra_quantizer_dict', {})
     quantizer = DEFAULT_MODEL_QUANTIZER[chip](extra_quantizer_dict, extra_fuse_dict,quant_dict)
     if chip == "Academic":

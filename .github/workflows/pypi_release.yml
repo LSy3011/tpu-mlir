@@ -12,7 +12,7 @@ jobs:
         shell: bash
 
     container:
-      image: sophgo/tpuc_dev:latest
+      image: XX/tpuc_dev:latest
       options: --user 1001
       volumes:
         - /github/workspace:/workspace/tpu-mlir/

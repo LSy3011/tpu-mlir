@@ -1,7 +1,7 @@
 import os
 import torch
 import setuptools
-from sophgo_mq import __version__
+from tt_mq import __version__
 from torch.utils.cpp_extension import BuildExtension, CppExtension
 
 
@@ -31,11 +31,11 @@ if torch.cuda.is_available():
 cmdclass['build_ext'] = BuildExtension
 
 setuptools.setup(
-    name="sophgo_mq",
+    name="tt_mq",
     version=__version__,
-    author="SOPHGO Technology Co. Ltd.",
+    author="xx Technology Co. Ltd.",
     author_email="",
-    description=("PTQ and Quantization aware training for SOPHGO devices."),
+    description=("PTQ and Quantization aware training for xx devices."),
     ext_modules=ext_modules,
     cmdclass=cmdclass,
     url="",

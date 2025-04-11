@@ -1,6 +1,6 @@
-from sophgo_mq.fake_quantize import TqtFakeQuantize
-from sophgo_mq.observer import MinMaxFloorObserver
-from sophgo_mq.scheme import QuantizeScheme
+from tt_mq.fake_quantize import TqtFakeQuantize
+from tt_mq.observer import MinMaxFloorObserver
+from tt_mq.scheme import QuantizeScheme
 
 
 bias_fakeq_param = {}

@@ -1,6 +1,6 @@
 import torch
 
-from sophgo_mq.utils.logger import logger
+from tt_mq.utils.logger import logger
 
 
 def enable_calibration(model):
@@ -15,7 +15,7 @@ def enable_calibration_woquantization(model, quantizer_type='fake_quant'):
     logger.info('Enable observer and Disable quantize for {}'.format(quantizer_type))
     for name, submodule in model.named_modules():
         if isinstance(submodule, torch.quantization.FakeQuantizeBase):
-            if quantizer_type not in name: 
+            if quantizer_type not in name:
                 submodule.disable_observer()
                 submodule.disable_fake_quant()
                 continue
@@ -27,7 +27,7 @@ def enable_calibration_quantization(model, quantizer_type='fake_quant'):
     logger.info('Enable observer and Enable quantize for {}'.format(quantizer_type))
     for name, submodule in model.named_modules():
         if isinstance(submodule, torch.quantization.FakeQuantizeBase):
-            if quantizer_type not in name: 
+            if quantizer_type not in name:
                 submodule.disable_observer()
                 submodule.disable_fake_quant()
                 continue

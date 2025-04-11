@@ -1,7 +1,7 @@
 import torch
 
-from sophgo_mq.fake_quantize.quantize_base import QuantizeBase
-from sophgo_mq.utils import is_symmetric_quant
+from tt_mq.fake_quantize.quantize_base import QuantizeBase
+from tt_mq.utils import is_symmetric_quant
 
 
 class TqtFakeQuantize(QuantizeBase):

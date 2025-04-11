@@ -4,7 +4,7 @@ import onnx.numpy_helper
 import copy
 import numpy as np
 import onnxruntime as rt
-from sophgo_mq.OnnxOpOptionalAttrs import OnnxOpOptionalAttrGetter
+from tt_mq.OnnxOpOptionalAttrs import OnnxOpOptionalAttrGetter
 
 onnx_attr_translator = {
     "axis": lambda x: int(x),

@@ -2,9 +2,9 @@ import math
 
 import torch
 from torch.onnx import symbolic_helper
-from sophgo_mq.fake_quantize.quantize_base import QuantizeBase
-from sophgo_mq.utils import is_tracing_state
-from sophgo_mq.utils.hook import PerChannelLoadHook
+from tt_mq.fake_quantize.quantize_base import QuantizeBase
+from tt_mq.utils import is_tracing_state
+from tt_mq.utils.hook import PerChannelLoadHook
 
 
 def dsq_function_per_tensor(x, scale, zero_point, quant_min, quant_max, alpha):
@@ -84,7 +84,7 @@ class FakeQuantizeDSQPerchannel(torch.autograd.Function):
 
     @staticmethod
     def symbolic(g, x, scale, zero_point, quant_min, quant_max, ch_axis, alpha):
-        output = g.op("Sophgo_custom::FakeQuantizeDSQPerchannel", x, scale, zero_point, quant_min_i=quant_min, quant_max_i=quant_max, alpha_f=alpha)
+        output = g.op("xx_custom::FakeQuantizeDSQPerchannel", x, scale, zero_point, quant_min_i=quant_min, quant_max_i=quant_max, alpha_f=alpha)
 
         input_shape = symbolic_helper._get_tensor_sizes(x)
         if input_shape is not None and hasattr(x.type(), 'with_sizes'):
@@ -100,7 +100,7 @@ class FakeQuantizeDSQPertensor(torch.autograd.Function):
 
     @staticmethod
     def symbolic(g, x, scale, zero_point, quant_min, quant_max, alpha):
-        output = g.op("Sophgo_custom::FakeQuantizeDSQPertensor", x, scale, zero_point, quant_min_i=quant_min, quant_max_i=quant_max, alpha_f=alpha)
+        output = g.op("xx_custom::FakeQuantizeDSQPertensor", x, scale, zero_point, quant_min_i=quant_min, quant_max_i=quant_max, alpha_f=alpha)
 
         input_shape = symbolic_helper._get_tensor_sizes(x)
         if input_shape is not None and hasattr(x.type(), 'with_sizes'):

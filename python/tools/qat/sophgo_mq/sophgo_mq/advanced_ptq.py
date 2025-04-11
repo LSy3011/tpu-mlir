@@ -22,12 +22,12 @@ except (ModuleNotFoundError, AssertionError):
 import numpy as np
 from typing import List
 
-from sophgo_mq.utils.logger import logger
-from sophgo_mq.utils.hook import DataSaverHook, StopForwardException
-from sophgo_mq.utils import deepcopy_graphmodule, deepcopy_mixedmodule, topology_order, getitem2node
-from sophgo_mq.utils.utils import _fix_succ_recursivly
-from sophgo_mq.utils.state import enable_quantization, disable_all
-import sophgo_mq.nn.intrinsic.qat as qnniqat
+from tt_mq.utils.logger import logger
+from tt_mq.utils.hook import DataSaverHook, StopForwardException
+from tt_mq.utils import deepcopy_graphmodule, deepcopy_mixedmodule, topology_order, getitem2node
+from tt_mq.utils.utils import _fix_succ_recursivly
+from tt_mq.utils.state import enable_quantization, disable_all
+import tt_mq.nn.intrinsic.qat as qnniqat
 
 _ADAROUND_SUPPORT_TYPE = (torch.nn.Conv2d, torch.nn.Linear)
 _FUSED_TYPE = (nniqat.ConvBnReLU2d, nniqat.ConvBn2d, qnniqat.ConvFreezebn2d, qnniqat.ConvFreezebnReLU2d)
@@ -53,7 +53,7 @@ def layer_has_weights(nodes, modules):
         if node in modules:
             if isinstance(modules[node], _WEIGHTS_MODULE_TYPE):
                 has_weights = True
-                break 
+                break
     return has_weights
 
 
@@ -235,7 +235,7 @@ def _flatten_args(node):
 
 
 def find_used_times(nodes, target):
-    used = len([_node for _node in target.users if _node in nodes])    
+    used = len([_node for _node in target.users if _node in nodes])
     return used
 
 
@@ -270,7 +270,7 @@ def find_cur_node(layer_node_list):
     unwanted = set()
     for key in single_branch:
         if key is node:
-            continue 
+            continue
         else:
             unwanted = unwanted.union(single_branch[key])
     layer_node_list = [_node for _node in layer_node_list if _node not in unwanted]
@@ -359,7 +359,7 @@ def subgraph_reconstruction(subgraph, cached_inps, cached_oups, config):
         if a_scheduler:
             a_scheduler.step()
     torch.cuda.empty_cache()
-    for name, layer in subgraph.named_modules():        
+    for name, layer in subgraph.named_modules():
         if isinstance(layer, _FUSED_TYPE):
             # We need to do bn fold simulation here.
             weight_quantizer = layer.weight_fake_quant
@@ -645,7 +645,7 @@ def ptq_reconstruction(model: GraphModule, cali_data: list, config: dict, graph_
                     fp32_inp_module = fp32_modules[qnode2fpnode_dict[_node]]
                     quant_module = quant_modules[_node]
                     # fp32 inps: [out_b1, out_b2, ...]
-                    _, fp32_inps = save_inp_oup_data(fp32_model, None, fp32_inp_module, cali_data, 
+                    _, fp32_inps = save_inp_oup_data(fp32_model, None, fp32_inp_module, cali_data,
                                                      store_inp=False, store_oup=(config.prob < 1.0), keep_gpu=config.keep_gpu)
                     _, fp32_oups = save_inp_oup_data(fp32_model, None, fp32_module, cali_data,
                                                      store_inp=False, store_oup=(not out_is_cached), keep_gpu=config.keep_gpu)

@@ -1,25 +1,25 @@
 <div align="center">
-    <img src="resources/sophgo_mq_logo.png" width="6000"  />
+    <img src="resources/tt_mq_logo.png" width="6000"  />
 </div>
 
 ------------
 
 ## Introduction
 
-SOPHGO-mq is an open-source model quantization toolkit forked form [MQBench](https://github.com/ModelTC/MQBench). SOPHGO-mq has made some customized modifications and added some features based on MQBench.
+xx-mq is an open-source model quantization toolkit forked form [MQBench](https://github.com/ModelTC/MQBench). xx-mq has made some customized modifications and added some features based on MQBench.
 
-SOPHGO-mq is to provide:
+xx-mq is to provide:
 
 - **Quantitative Scheme**. Fake quantization nodes are inserted into the PyTorch model, and users can customize the insertion points of the nodes as well as the behavior of the fake quantization nodes. After the model training is completed, the corresponding Onnx file as well as calitable and qtable will be exported.
-- **Useful Algorithms**. SOPHGO-mq supports a variety of quantization algorithms, including quantization algorithms for the CV  and NLP fields.
-- **Mixed Precision**. SOPHGO-mq supports mixed-precision quantization, which can better ensure the performance of the model after quantization.
+- **Useful Algorithms**. xx-mq supports a variety of quantization algorithms, including quantization algorithms for the CV  and NLP fields.
+- **Mixed Precision**. xx-mq supports mixed-precision quantization, which can better ensure the performance of the model after quantization.
 
 
 ## Installation
 
 ```shell
-git clone https://github.com/sophgo/sophgo-mq.git
-cd sophgo-mq
+git clone https://github.com/xxx/xx-mq.git
+cd xx-mq
 python setup.py install
 ```
 
@@ -33,16 +33,16 @@ Let's take the PTQ quantization of ResNet18 as an example.
     ```python
     import torch
     import torchvision.models as models
-    from sophgo_mq.prepare_by_platform import prepare_by_platform
-    from sophgo_mq.convert_deploy import convert_deploy
-    from sophgo_mq.utils.state import enable_quantization, enable_calibration
+    from tt_mq.prepare_by_platform import prepare_by_platform
+    from tt_mq.convert_deploy import convert_deploy
+    from tt_mq.utils.state import enable_quantization, enable_calibration
 
     model = models.__dict__['resnet18']()
     ```
 
 2. Use prepare_by_platform function to insert fake quantization nodes.
 
-    The function `prepare_by_platform` is used to trace the computational graph of the model using `torch.fx`, 
+    The function `prepare_by_platform` is used to trace the computational graph of the model using `torch.fx`,
     and to insert fake quantization nodes at the appropriate positions.
 
     When quantizing a model, it is necessary to specify the chip type, quantization mode, and quantization strategy.
@@ -66,15 +66,15 @@ Let's take the PTQ quantization of ResNet18 as an example.
 3. Define your dataloader and perform forward propagation.
 
 
-    The function `enable_calibration` serves to enable observer for gathering statistical distribution data of weights or activations, 
+    The function `enable_calibration` serves to enable observer for gathering statistical distribution data of weights or activations,
     and subsequently compute the quantization information.
 
-    The function `enable_quantization` disable observer and enables quantize. 
+    The function `enable_quantization` disable observer and enables quantize.
     When a model performs forward inference, the model's weights and activations will be quantized.
 
-    In the following code, we first use the function `enable_calibration` to enable observer, 
-    and then perform forward propagation with a number of data samples. 
-    During propagation, the observer collects statistical information for quantization. 
+    In the following code, we first use the function `enable_calibration` to enable observer,
+    and then perform forward propagation with a number of data samples.
+    During propagation, the observer collects statistical information for quantization.
     Finally, we use the `enable_quantization` function to enable quantize.
 
     ```python
@@ -85,13 +85,13 @@ Let's take the PTQ quantization of ResNet18 as an example.
     enable_quantization(model) ## enable quantize
     ```
 
-4. Use convert_deploy function to export Onnx file, calitable and qtable. 
+4. Use convert_deploy function to export Onnx file, calitable and qtable.
 
 
     ```python
-    convert_deploy(model, net_type='CNN', 
-                    input_shape_dict={'input': [1, 3, 224, 224]}, 
-                    output_path='./', 
+    convert_deploy(model, net_type='CNN',
+                    input_shape_dict={'input': [1, 3, 224, 224]},
+                    output_path='./',
                     model_name='resnet18')
     ```
 
@@ -133,7 +133,7 @@ CUDA_VISIBLE_DEVICES=0 python application/imagenet_example/PTQ/ptq/ptq_main.py \
 ```
 
 ### CV QAT
-SOPHGO-mq supports QAT quantization for common classification models.
+xx-mq supports QAT quantization for common classification models.
 ```Shell
 CUDA_VISIBLE_DEVICES=0 python application/imagenet_example/main.py \
     --arch=resnet18 \
@@ -153,7 +153,7 @@ CUDA_VISIBLE_DEVICES=0 python application/imagenet_example/main.py \
     --export_onnx_before_training \
     --output_path=./
 ```
-SOPHGO-mq also supports QAT quantization for Yolov5.
+xx-mq also supports QAT quantization for Yolov5.
 ```Shell
 cd ./application/yolov5_example
 export PYTHONPATH=../../:$PYTHONPATH
@@ -168,7 +168,7 @@ CUDA_VISIBLE_DEVICES=0 python train.py \
 ```
 
 ### NLP PTQ
-SOPHGO-mq supports PTQ quantization for the BERT model on the MRPC dataset.
+xx-mq supports PTQ quantization for the BERT model on the MRPC dataset.
 ```Shell
 cd ./application/nlp_example
 export PYTHONPATH=../../:$PYTHONPATH
@@ -177,7 +177,7 @@ python ptq.py --config config.yaml
 
 ### NLP QAT
 
-SOPHGO-mq supports QAT quantization for the BERT model on the SQuAD dataset.
+xx-mq supports QAT quantization for the BERT model on the SQuAD dataset.
 
 ```Shell
 cd ./application/nlp_example

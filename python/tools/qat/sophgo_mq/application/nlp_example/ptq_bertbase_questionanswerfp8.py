@@ -17,12 +17,12 @@ from transformers import default_data_collator
 from transformers.onnx.features import FeaturesManager
 from datasets import load_dataset,load_metric
 import torch.optim as optim
-from sophgo_mq.convert_deploy import convert_deploy, convert_onnx
-from sophgo_mq.prepare_by_platform import prepare_by_platform, BackendType
-from sophgo_mq.utils.state import enable_calibration, enable_quantization, disable_all
+from tt_mq.convert_deploy import convert_deploy, convert_onnx
+from tt_mq.prepare_by_platform import prepare_by_platform, BackendType
+from tt_mq.utils.state import enable_calibration, enable_quantization, disable_all
 from transformers import logging
 import matplotlib.pyplot as plt
-import torch.onnx 
+import torch.onnx
 import pandas as pd
 import json
 import logging
@@ -35,7 +35,7 @@ from transformers import BertTokenizer, BertModel
 from transformers.utils.fx import HFTracer
 from transformers import Trainer, TrainingArguments, PreTrainedModel
 
-parser = argparse.ArgumentParser(description='sophgo_mq bertbase Training')
+parser = argparse.ArgumentParser(description='tt_mq bertbase Training')
 
 parser.add_argument('--epochs', default=2, type=int, metavar='N',
                     help='number of total epochs to run')
@@ -58,7 +58,7 @@ parser.add_argument('--aob', default='EMAQuantileObserver', type=str,
 parser.add_argument('--wfq', default='FixedFakeQuantize', type=str,
                     metavar='wfq', help='weight fakequantize')
 parser.add_argument('--afq', default='E4M3FakeQuantize', type=str,
-                    metavar='afq', help='active fakequantize')                                         
+                    metavar='afq', help='active fakequantize')
 parser.add_argument('--backend', type=str, choices=['Academic_NLP', 'Tensorrt_NLP'], default='Academic_NLP')
 
 
@@ -205,7 +205,7 @@ def postprocess_qa_predictions(examples, features, raw_predictions, n_best_size 
 
         min_null_score = None # Only used if squad_v2 is True.
         valid_answers = []
-        
+
         context = example["context"]
         # Looping through all the features associated to the current example.
         for feature_index in feature_indices:
@@ -248,14 +248,14 @@ def postprocess_qa_predictions(examples, features, raw_predictions, n_best_size 
                             "text": context[start_char: end_char]
                         }
                     )
-        
+
         if len(valid_answers) > 0:
             best_answer = sorted(valid_answers, key=lambda x: x["score"], reverse=True)[0]
         else:
             # In the very rare edge case we have not a single non-null prediction, we create a fake prediction to avoid
             # failure.
             best_answer = {"text": "", "score": 0.0}
-        
+
         # Let's pick our final answer: the best one or the null answer (only for squad_v2)
         if not squad_v2:
             predictions[example["id"]] = best_answer["text"]
@@ -271,7 +271,7 @@ def calibrate(cali_loader, model):
     with torch.no_grad():
         for i in range(len(cali_loader)):
             X= next(iter(cali_loader))
-            batch_input =X['input_ids'].to(device)  
+            batch_input =X['input_ids'].to(device)
             batch_seg = X['attention_mask'].to(device)
             start_logits, end_logits = model(input_ids=batch_input,
                                                 attention_mask=batch_seg)
@@ -294,7 +294,7 @@ def prec(datasets,trainer):
     features_per_example1 = collections.defaultdict(list)
     for i, feature in enumerate(features1):
         features_per_example1[example_id_to_index1[feature["example_id"]]].append(i)
-    
+
     final_predictions1 = postprocess_qa_predictions(datasets["validation"], validation_features1, raw_predictions1.predictions)
     metric = load_metric("squad_v2" if squad_v2 else "squad")
     if squad_v2:
@@ -404,9 +404,9 @@ class BertForQuestionAnswering(PreTrainedModel):
             attention_mask=attention_mask)
         start_logits=bert_output['start_logits']
         end_logits=bert_output['end_logits']
-        start_logits = start_logits.squeeze(-1) 
-        end_logits = end_logits.squeeze(-1) 
-        
+        start_logits = start_logits.squeeze(-1)
+        end_logits = end_logits.squeeze(-1)
+
         if start_positions is not None and end_positions is not None:
             # 由于部分情况下start/end 位置会超过输入的长度
             # （例如输入序列的可能大于512，并且正确的开始或者结束符就在512之后）
@@ -474,5 +474,5 @@ onnx_config = model_onnx_config(model_prepared.config)
 convert_deploy(model_prepared,
             BackendType.Academic_NLP,
             dummy_input=((dict(X)),),
-            model_name='bert-base-uncased-sophgo_mq-squad'
-            ) 
+            model_name='bert-base-uncased-tt_mq-squad'
+            )

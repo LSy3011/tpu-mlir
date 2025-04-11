@@ -10,9 +10,9 @@ from torch.nn.modules.utils import _pair, _single
 
 from typing import TypeVar
 
-import sophgo_mq.nn.intrinsic as qnni
-import sophgo_mq.nn.qat as qnnqat
-from sophgo_mq.utils.fusion import fuse_deconv_bn_weights
+import tt_mq.nn.intrinsic as qnni
+import tt_mq.nn.qat as qnnqat
+from tt_mq.utils.fusion import fuse_deconv_bn_weights
 
 
 _BN_CLASS_MAP = {
@@ -188,14 +188,14 @@ class _ConvTransposeBnNd(nn.modules.conv._ConvTransposeNd, _FusedModule):
         # will be added later
         if self.bias is not None:
             zero_bias = torch.zeros_like(self.bias)
-            conv_bias = self.bias 
+            conv_bias = self.bias
         else:
             zero_bias = torch.zeros(self.out_channels, device=scaled_weight.device)
             conv_bias = torch.zeros_like(zero_bias, device=scaled_weight.device)
         if self.bn.affine:
-            full_bias = (conv_bias - self.bn.running_mean) / running_std * self.bn.weight + self.bn.bias 
+            full_bias = (conv_bias - self.bn.running_mean) / running_std * self.bn.weight + self.bn.bias
         else:
-            full_bias = (conv_bias - self.bn.running_mean) / running_std 
+            full_bias = (conv_bias - self.bn.running_mean) / running_std
         # quant_bias = self.bias_fake_quant(full_bias)
         quant_bias = self.bias_fake_quant_proc(full_bias, self.weight_fake_quant.scale, self.input_fake_quantizer.scale)
         conv_with_bias = self._convtransposed_forward(input, scaled_weight, quant_bias)
@@ -314,7 +314,7 @@ class _ConvTransposeBnNd(nn.modules.conv._ConvTransposeNd, _FusedModule):
         return qat_deconvbn
 
 
-class ConvTransposeBn2d_sophgo(_ConvTransposeBnNd, nn.ConvTranspose2d):
+class ConvTransposeBn2d_xx(_ConvTransposeBnNd, nn.ConvTranspose2d):
     _FLOAT_MODULE = qnni.ConvTransposeBn2d
 
     def __init__(
@@ -359,7 +359,7 @@ class ConvTransposeBn2d_sophgo(_ConvTransposeBnNd, nn.ConvTranspose2d):
                                   output_padding, self.groups, self.dilation)
 
 
-class ConvTransposeBnReLU2d_sophgo(ConvTransposeBn2d_sophgo):
+class ConvTransposeBnReLU2d_xx(ConvTransposeBn2d_xx):
     _FLOAT_MODULE = qnni.ConvTransposeBnReLU2d
 
     def __init__(
@@ -391,7 +391,7 @@ class ConvTransposeBnReLU2d_sophgo(ConvTransposeBn2d_sophgo):
         #                                             padding_mode, eps, momentum,
         #                                             freeze_bn,
         #                                             qconfig)
-        super(ConvTransposeBnReLU2d_sophgo,
+        super(ConvTransposeBnReLU2d_xx,
               self).__init__(in_channels,
                              out_channels,
                              kernel_size,
@@ -409,14 +409,14 @@ class ConvTransposeBnReLU2d_sophgo(ConvTransposeBn2d_sophgo):
                              qconfig=qconfig)
 
     def forward(self, input):
-        return F.relu(ConvTransposeBn2d_sophgo._forward(self, input))
+        return F.relu(ConvTransposeBn2d_xx._forward(self, input))
 
     @classmethod
     def from_float(cls, mod):
-        return super(ConvTransposeBnReLU2d_sophgo, cls).from_float(mod)
+        return super(ConvTransposeBnReLU2d_xx, cls).from_float(mod)
 
 
-class ConvTransposeReLU2d_sophgo(qnnqat.ConvTranspose2d_sophgo):
+class ConvTransposeReLU2d_xx(qnnqat.ConvTranspose2d_xx):
     _FLOAT_MODULE = qnni.ConvTransposeReLU2d
     _FLOAT_DECONV_MODULE = nn.ConvTranspose2d
     _FLOAT_BN_MODULE = None
@@ -438,7 +438,7 @@ class ConvTransposeReLU2d_sophgo(qnnqat.ConvTranspose2d_sophgo):
             padding_mode='zeros',
             qconfig=None):
 
-        super(ConvTransposeReLU2d_sophgo,
+        super(ConvTransposeReLU2d_xx,
               self).__init__(in_channels,
                              out_channels,
                              kernel_size,
@@ -453,4 +453,4 @@ class ConvTransposeReLU2d_sophgo(qnnqat.ConvTranspose2d_sophgo):
         assert qconfig, 'qconfig must be provided for QAT module'
 
     def forward(self, input, output_size=None):
-        return F.relu(qnnqat.ConvTranspose2d_sophgo.forward(input, output_size))
+        return F.relu(qnnqat.ConvTranspose2d_xx.forward(input, output_size))

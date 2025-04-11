@@ -18,10 +18,10 @@ import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 # import torchvision.models as models
 import models
-from sophgo_mq.convert_deploy import convert_deploy
-from sophgo_mq.prepare_by_platform import prepare_by_platform, BackendType
-from sophgo_mq.utils.state import enable_calibration, enable_quantization, disable_all
-from sophgo_mq.tools.replace_syncbn import replace_bn_to_syncbn
+from tt_mq.convert_deploy import convert_deploy
+from tt_mq.prepare_by_platform import prepare_by_platform, BackendType
+from tt_mq.utils.state import enable_calibration, enable_quantization, disable_all
+from tt_mq.tools.replace_syncbn import replace_bn_to_syncbn
 
 model_names = sorted(name for name in models.__dict__
     if name.islower() and not name.startswith("__")
@@ -154,8 +154,8 @@ def main_worker(gpu, ngpus_per_node, args):
     # quantize model
     if args.quant:
         model = prepare_by_platform(model, BackendType.Tensorrt)
-    
-    # use SyncBN 
+
+    # use SyncBN
     replace_bn_to_syncbn(model)
     print('gpu = {}: {}'.format(args.gpu, model))
 
@@ -197,13 +197,13 @@ def main_worker(gpu, ngpus_per_node, args):
                                     momentum=args.momentum,
                                     weight_decay=args.weight_decay)
     elif args.optim == 'adam':
-        optimizer = torch.optim.Adam(model.parameters(), args.lr, 
-                                     betas=(0.9, 0.999), eps=1e-08, 
-                                     weight_decay=args.weight_decay, 
+        optimizer = torch.optim.Adam(model.parameters(), args.lr,
+                                     betas=(0.9, 0.999), eps=1e-08,
+                                     weight_decay=args.weight_decay,
                                      amsgrad=False)
-    
+
     # prepare dataset
-    train_loader, train_sampler, val_loader, cali_loader = prepare_dataloader(args) 
+    train_loader, train_sampler, val_loader, cali_loader = prepare_dataloader(args)
 
     # optionally resume from a checkpoint
     if args.resume:
@@ -245,7 +245,7 @@ def main_worker(gpu, ngpus_per_node, args):
         return
 
     if args.evaluate:
-        from sophgo_mq.convert_deploy import convert_merge_bn
+        from tt_mq.convert_deploy import convert_merge_bn
         convert_merge_bn(model.eval())
         validate(val_loader, model, criterion, args)
         return
@@ -254,7 +254,7 @@ def main_worker(gpu, ngpus_per_node, args):
         if args.distributed:
             train_sampler.set_epoch(epoch)
         adjust_learning_rate(optimizer, epoch, args)
-        
+
         # train for one epoch
         train(train_loader, model, criterion, optimizer, epoch, args)
 
@@ -303,7 +303,7 @@ def prepare_dataloader(args):
     cali_batch = 10
     cali_dataset = torch.utils.data.Subset(train_dataset, indices=torch.arange(cali_batch_size * cali_batch))
     cali_loader = torch.utils.data.DataLoader(cali_dataset, batch_size=cali_batch_size, shuffle=False,
-                                                num_workers=args.workers, pin_memory=True)    
+                                                num_workers=args.workers, pin_memory=True)
 
     val_loader = torch.utils.data.DataLoader(
         datasets.ImageFolder(valdir, transforms.Compose([

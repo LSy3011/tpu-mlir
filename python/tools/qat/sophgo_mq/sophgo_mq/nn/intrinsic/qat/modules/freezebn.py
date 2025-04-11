@@ -7,8 +7,8 @@ from torch.nn import init
 from torch.nn.modules.utils import _pair, _single
 from torch.nn.parameter import Parameter
 from typing import TypeVar
-import sophgo_mq.nn.intrinsic as qnni
-from sophgo_mq.nn.modules import FrozenBatchNorm2d
+import tt_mq.nn.intrinsic as qnni
+from tt_mq.nn.modules import FrozenBatchNorm2d
 from .deconv_fused import _ConvTransposeBnNd
 
 MOD = TypeVar('MOD', bound=nn.modules.conv._ConvNd)

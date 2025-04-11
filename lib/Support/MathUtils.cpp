@@ -305,7 +305,7 @@ void QuantizeMultiplier(double double_multiplier, int64_t *quantized_multiplier,
     *shift = 30;
     q_fixed = (1LL << 31) - 1;
   }
-  // Sophgo expects right shift to be positive, and embed (1 << 31) into right
+  // xxx expects right shift to be positive, and embed (1 << 31) into right
   // shift bits.
   // *shift = (-*shift) + 31;
   *quantized_multiplier = static_cast<int32_t>(q_fixed);

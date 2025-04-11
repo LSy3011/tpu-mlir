@@ -2,15 +2,15 @@ import operator
 
 import prettytable
 
-import torch 
-import torch.nn as nn 
+import torch
+import torch.nn as nn
 import torch.nn.functional as F
 
-from sophgo_mq.utils.utils import deepcopy_graphmodule, deepcopy_mixedmodule
-from sophgo_mq.utils.logger import logger
-from sophgo_mq.utils.hook import DataSaverHook, StopForwardException
-from sophgo_mq.utils.state import enable_quantization, disable_all
-from sophgo_mq.fake_quantize.quantize_base import QuantizeBase
+from tt_mq.utils.utils import deepcopy_graphmodule, deepcopy_mixedmodule
+from tt_mq.utils.logger import logger
+from tt_mq.utils.hook import DataSaverHook, StopForwardException
+from tt_mq.utils.state import enable_quantization, disable_all
+from tt_mq.fake_quantize.quantize_base import QuantizeBase
 
 __all__ = ['profiling']
 
@@ -80,7 +80,7 @@ def update_model_with_dummy_module(fp_model: torch.fx.GraphModule, quant_model: 
             if isinstance(quant_node.target, str) is False:
                 name = quant_node.name
             setattr(quant_model, name + '_dummy', quant_dummy)
-            inserted_node = quant_model.graph.create_node(name=quant_node.name + '_dummy', 
+            inserted_node = quant_model.graph.create_node(name=quant_node.name + '_dummy',
                                                           target=name + '_dummy',
                                                           args=(quant_node, ),
                                                           op='call_module',
@@ -92,7 +92,7 @@ def update_model_with_dummy_module(fp_model: torch.fx.GraphModule, quant_model: 
         quant_nodes = list(quant_model.graph.nodes)
         with fp_model.graph.inserting_after(fp_node):
             setattr(fp_model, name + '_dummy', fp_dummy)
-            inserted_node = fp_model.graph.create_node(name=fp_node.name + '_dummy', 
+            inserted_node = fp_model.graph.create_node(name=fp_node.name + '_dummy',
                                                        target=name + '_dummy',
                                                        args=(fp_node, ),
                                                        op='call_module',
@@ -125,7 +125,7 @@ def profiling(model: torch.fx.GraphModule, cali_data, profiling_type='standalone
     args:
         model: the model to profile
         cali_data: batches used to profile
-        profiling_type: 
+        profiling_type:
             'standalone' means to quantize each module by topology order, make de-quantize it after evaluation
             'interaction' means to quantize each module and then keep
     '''
@@ -194,7 +194,7 @@ def profiling(model: torch.fx.GraphModule, cali_data, profiling_type='standalone
                 user = None
             if user is None:
                 q_dummy_node, f_dummy_node, fp_model, quant_model, quant_node2module, fp_node2module = \
-                    update_model_with_dummy_module(fp_model, quant_model, quant_node, fp_node, 
+                    update_model_with_dummy_module(fp_model, quant_model, quant_node, fp_node,
                                                    nodes, [quant_node2fp_node[_node] for _node in nodes],
                                                    quant_node2module, fp_node2module)
                 user = [q_dummy_node]

@@ -34,9 +34,9 @@ from torchvision.transforms import (
 from transformers.onnx.features import FeaturesManager
 from transformers.utils.fx import HFTracer, get_concrete_args
 from transformers.trainer_utils import get_last_checkpoint, EvalLoopOutput
-from sophgo_mq.convert_deploy import convert_deploy
-from sophgo_mq.prepare_by_platform import prepare_by_platform
-from sophgo_mq.utils.state import enable_quantization, enable_calibration_woquantization,enable_calibration,disable_all
+from tt_mq.convert_deploy import convert_deploy
+from tt_mq.prepare_by_platform import prepare_by_platform
+from tt_mq.utils.state import enable_quantization, enable_calibration_woquantization,enable_calibration,disable_all
 
 logger = logging.getLogger("transformer")
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -105,7 +105,7 @@ def quantize_model(model, config_quant):
                 'pot_scale': False,
             },
             'int4_op': [
- 
+
             ],
         },
         'concrete_args': get_concrete_args(model, input_names),
@@ -142,7 +142,7 @@ def train_loop(dataloader, model, loss_fn, optimizer, lr_scheduler, epoch, total
         len(dataloader),
         [batch_time, data_time, losses, top1, top5],
         prefix="Epoch: [{}]".format(epoch))
-    
+
     model.cuda()
     model.train()
 
@@ -179,8 +179,8 @@ def test_loop(dataloader, model, loss_fn, mode='Test'):
     progress = ProgressMeter(
         len(dataloader),
         [batch_time, losses, top1, top5],
-        prefix='Test: ')    
-    
+        prefix='Test: ')
+
     model.eval()
     with torch.no_grad():
         end = time.time()
@@ -201,7 +201,7 @@ def test_loop(dataloader, model, loss_fn, mode='Test'):
                 progress.display(batch)
         print(' * Acc@1 {top1.avg:.3f} Acc@5 {top5.avg:.3f}'
             .format(top1=top1, top5=top5))
-        
+
     return top1.avg
 
 def accuracy(output, target, topk=(1,)):
@@ -219,7 +219,7 @@ def accuracy(output, target, topk=(1,)):
             correct_k = correct[:k].reshape(-1).float().sum(0, keepdim=True)
             res.append(correct_k.mul_(100.0 / batch_size))
         return res
-    
+
 def main(config_path):
     config = image_classification_utils.parse_config(config_path)
     set_seed(config.train.seed)
@@ -247,7 +247,7 @@ def main(config_path):
             transforms.ToTensor(),
             normalize,
         ]))
-    
+
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size = config.train.per_device_train_batch_size,
         shuffle=False, num_workers=1, pin_memory=True, sampler=None
@@ -262,14 +262,14 @@ def main(config_path):
         ])),
         batch_size = config.train.per_device_eval_batch_size,
         num_workers=1, shuffle=False, pin_memory=True)
-    
+
     # Calibration
     cali_batch = 20
     cali_batch_size = 10
     cali_dataset = torch.utils.data.Subset(train_dataset, indices=torch.arange(cali_batch_size * cali_batch))
     cali_loader = torch.utils.data.DataLoader(cali_dataset, batch_size=cali_batch_size,
                                               shuffle=False, num_workers=1, pin_memory=True)
-    
+
     if hasattr(config, 'quant'):
         model = quantize_model(model, config.quant)
     model.to(device)
@@ -309,7 +309,7 @@ def main(config_path):
         optimizer=optimizer,
         num_warmup_steps=0,
         num_training_steps=epoch_num * len(train_loader),
-    )  
+    )
     for t in range(epoch_num):
         print(f"Epoch {t+1}/{epoch_num}\n-------------------------------")
         total_loss = train_loop(train_loader, model_prepared, loss_fn, optimizer1, lr_scheduler1, t+1, total_loss)
@@ -317,14 +317,14 @@ def main(config_path):
         if Test_acc > best_acc:
             best_acc = Test_acc
             print('saving new weights...\n')
-    print("Done!") 
+    print("Done!")
 
     # Model Deploy
     # batch_X1, batch_y1 = next(iter(train_loader))
     # export_inputs = {
     #     'pixel_values': batch_X1.cuda()
     # }
-    # convert_deploy(model.eval(), net_type='Transformer', 
+    # convert_deploy(model.eval(), net_type='Transformer',
     #                dummy_input=(export_inputs,),
     #                model_name='qat_swin_transformer')
 
@@ -367,7 +367,7 @@ class ProgressMeter(object):
         num_digits = len(str(num_batches // 1))
         fmt = '{:' + str(num_digits) + 'd}'
         return '[' + fmt + '/' + fmt.format(num_batches) + ']'
-    
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(
