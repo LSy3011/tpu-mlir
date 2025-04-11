@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # ==============================================================================
 #
-# Copyright (C) 2022 Sophgo Technologies Inc.  All rights reserved.
+# Copyright (C) 2022  All rights reserved.
 #
 # TPU-MLIR is licensed under the 2-Clause BSD License except for the
 # third-party components.
@@ -26,7 +26,7 @@ if __name__ == '__main__':
     # prepare input for c_interface
     data = np.load(args.input)
     f = open("data_for_capi.txt", "w")
-    # TODO: Currently, only cases with one input of 4-D considered 
+    # TODO: Currently, only cases with one input of 4-D considered
     data_input = data[data.files[0]]
     input_shape = data_input.shape
     print("Shape of input data:", input_shape)
@@ -53,4 +53,3 @@ if __name__ == '__main__':
 
 
 
-    

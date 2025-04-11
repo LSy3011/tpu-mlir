@@ -1,6 +1,6 @@
 # ==============================================================================
 #
-# Copyright (C) 2024 Sophgo Technologies Inc.  All rights reserved.
+# Copyright (C) 2024  All rights reserved.
 #
 # TPU-MLIR is licensed under the 2-Clause BSD License except for the
 # third-party components.
@@ -109,7 +109,7 @@ class TiuCmd(BaseTpuCmd, Tiu):
                 )
             else:
                 return (
-                    f'%B{self.cmd_id}C{ci} = "{self.op_name}"' 
+                    f'%B{self.cmd_id}C{ci} = "{self.op_name}"'
                     + f"(%D{self.cmd_id_dep}C{ci})"
                 )
         res_name, res_type_t = zip(*((x.name, x.type_str) for x in self.results))

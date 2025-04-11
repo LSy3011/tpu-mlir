@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # ==============================================================================
 #
-# Copyright (C) 2022 Sophgo Technologies Inc.  All rights reserved.
+# Copyright (C) 2022  All rights reserved.
 #
 # TPU-MLIR is licensed under the 2-Clause BSD License except for the
 # third-party components.
@@ -221,7 +221,7 @@ class CommandRecorder:
                         "path": rel_path,
                         "last_modify": os.path.getmtime(modify_file),
                     }
-                    
+
                 else:
                     ret[name] = {
                         "path": rel_path,
@@ -242,7 +242,7 @@ class CommandRecorder:
             ref_dir = os.path.dirname(file_path)
             for file_name, file_info in load_from._dic.get("files", {}).items():
                 self.add_file(**{file_name: os.path.join(ref_dir, file_info["path"])})
-                
+
             for k, v in load_from._dic.items():
                 if k == "files":
                     continue

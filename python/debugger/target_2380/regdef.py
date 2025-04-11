@@ -1,6 +1,6 @@
 # ==============================================================================
 #
-# Copyright (C) 2022 Sophgo Technologies Inc.  All rights reserved.
+# Copyright (C) 2022  All rights reserved.
 #
 # TPU-MLIR is licensed under the 2-Clause BSD License except for the
 # third-party components.
@@ -110,7 +110,7 @@ class CONV_reg(atomic_reg):
         ("res1_addr", ctypes.c_uint64, 32),
         ("opd3_addr", ctypes.c_uint64, 32),
     ]
-    
+
     cmd_short: int
     op_code: int
     cmd_id_dep: int
@@ -202,7 +202,7 @@ class CONV_reg(atomic_reg):
 
     length: int = 1024
 
-    
+
 
 class sCONV_reg(atomic_reg):
     OP_NAME = "sCONV"
@@ -266,7 +266,7 @@ class sCONV_reg(atomic_reg):
         ("opd0_h_str", ctypes.c_uint64, 16),
         ("opd0_w_str", ctypes.c_uint64, 16),
     ]
-    
+
     cmd_short: int
     sym_range: int
     opt_opd4_const: int
@@ -328,7 +328,7 @@ class sCONV_reg(atomic_reg):
 
     length: int = 512
 
-    
+
 
 class MM_reg(atomic_reg):
     OP_NAME = "MM"
@@ -422,7 +422,7 @@ class MM_reg(atomic_reg):
         ("res1_addr", ctypes.c_uint64, 32),
         ("opd3_addr", ctypes.c_uint64, 32),
     ]
-    
+
     cmd_short: int
     op_code: int
     cmd_id_dep: int
@@ -514,7 +514,7 @@ class MM_reg(atomic_reg):
 
     length: int = 1024
 
-    
+
 
 class sMM_reg(atomic_reg):
     OP_NAME = "sMM"
@@ -561,7 +561,7 @@ class sMM_reg(atomic_reg):
         ("opd2_addr", ctypes.c_uint64, 32),
         ("rsvd9", ctypes.c_uint64, 32),
     ]
-    
+
     cmd_short: int
     sym_range: int
     rsvd0: int
@@ -606,7 +606,7 @@ class sMM_reg(atomic_reg):
 
     length: int = 384
 
-    
+
 
 class MM2_reg(atomic_reg):
     OP_NAME = "MM2"
@@ -700,7 +700,7 @@ class MM2_reg(atomic_reg):
         ("res1_addr", ctypes.c_uint64, 32),
         ("opd3_addr", ctypes.c_uint64, 32),
     ]
-    
+
     cmd_short: int
     op_code: int
     cmd_id_dep: int
@@ -792,7 +792,7 @@ class MM2_reg(atomic_reg):
 
     length: int = 1024
 
-    
+
 
 class sMM2_reg(atomic_reg):
     OP_NAME = "sMM2"
@@ -833,7 +833,7 @@ class sMM2_reg(atomic_reg):
         ("opd1_addr", ctypes.c_uint64, 32),
         ("opd2_addr", ctypes.c_uint64, 32),
     ]
-    
+
     cmd_short: int
     sym_range: int
     opt_opd4_const: int
@@ -872,7 +872,7 @@ class sMM2_reg(atomic_reg):
 
     length: int = 256
 
-    
+
 
 class CMP_reg(atomic_reg):
     OP_NAME = "CMP"
@@ -966,7 +966,7 @@ class CMP_reg(atomic_reg):
         ("res1_addr", ctypes.c_uint64, 32),
         ("opd3_addr", ctypes.c_uint64, 32),
     ]
-    
+
     cmd_short: int
     op_code: int
     cmd_id_dep: int
@@ -1058,7 +1058,7 @@ class CMP_reg(atomic_reg):
 
     length: int = 1024
 
-    
+
 
 class sCMP_reg(atomic_reg):
     OP_NAME = "sCMP"
@@ -1094,7 +1094,7 @@ class sCMP_reg(atomic_reg):
         ("opd2_addr", ctypes.c_uint64, 32),
         ("opd3_addr", ctypes.c_uint64, 32),
     ]
-    
+
     cmd_short: int
     op_code: int
     cmd_id_dep: int
@@ -1128,7 +1128,7 @@ class sCMP_reg(atomic_reg):
 
     length: int = 384
 
-    
+
 
 class SFU_reg(atomic_reg):
     OP_NAME = "SFU"
@@ -1222,7 +1222,7 @@ class SFU_reg(atomic_reg):
         ("res1_addr", ctypes.c_uint64, 32),
         ("opd3_addr", ctypes.c_uint64, 32),
     ]
-    
+
     cmd_short: int
     op_code: int
     cmd_id_dep: int
@@ -1314,7 +1314,7 @@ class SFU_reg(atomic_reg):
 
     length: int = 1024
 
-    
+
 
 class sSFU_reg(atomic_reg):
     OP_NAME = "sSFU"
@@ -1342,7 +1342,7 @@ class sSFU_reg(atomic_reg):
         ("opd0_addr", ctypes.c_uint64, 32),
         ("opd1_addr", ctypes.c_uint64, 32),
     ]
-    
+
     cmd_short: int
     op_code: int
     cmd_id_dep: int
@@ -1368,7 +1368,7 @@ class sSFU_reg(atomic_reg):
 
     length: int = 256
 
-    
+
 
 class VC_reg(atomic_reg):
     OP_NAME = "VC"
@@ -1462,7 +1462,7 @@ class VC_reg(atomic_reg):
         ("res1_addr", ctypes.c_uint64, 32),
         ("opd3_addr", ctypes.c_uint64, 32),
     ]
-    
+
     cmd_short: int
     op_code: int
     cmd_id_dep: int
@@ -1554,7 +1554,7 @@ class VC_reg(atomic_reg):
 
     length: int = 1024
 
-    
+
 
 class sVC_reg(atomic_reg):
     OP_NAME = "sVC"
@@ -1587,7 +1587,7 @@ class sVC_reg(atomic_reg):
         ("opd2_addr", ctypes.c_uint64, 32),
         ("rsvd3", ctypes.c_uint64, 64),
     ]
-    
+
     cmd_short: int
     op_code: int
     cmd_id_dep: int
@@ -1618,7 +1618,7 @@ class sVC_reg(atomic_reg):
 
     length: int = 384
 
-    
+
 
 class LIN_reg(atomic_reg):
     OP_NAME = "LIN"
@@ -1712,7 +1712,7 @@ class LIN_reg(atomic_reg):
         ("res1_addr", ctypes.c_uint64, 32),
         ("opd3_addr", ctypes.c_uint64, 32),
     ]
-    
+
     cmd_short: int
     op_code: int
     cmd_id_dep: int
@@ -1804,7 +1804,7 @@ class LIN_reg(atomic_reg):
 
     length: int = 1024
 
-    
+
 
 class sLIN_reg(atomic_reg):
     OP_NAME = "sLIN"
@@ -1830,7 +1830,7 @@ class sLIN_reg(atomic_reg):
         ("opd1_addr", ctypes.c_uint64, 32),
         ("opd2_addr", ctypes.c_uint64, 32),
     ]
-    
+
     cmd_short: int
     op_code: int
     cmd_id_dep: int
@@ -1854,7 +1854,7 @@ class sLIN_reg(atomic_reg):
 
     length: int = 256
 
-    
+
 
 class AR_reg(atomic_reg):
     OP_NAME = "AR"
@@ -1948,7 +1948,7 @@ class AR_reg(atomic_reg):
         ("res1_addr", ctypes.c_uint64, 32),
         ("opd3_addr", ctypes.c_uint64, 32),
     ]
-    
+
     cmd_short: int
     op_code: int
     cmd_id_dep: int
@@ -2040,7 +2040,7 @@ class AR_reg(atomic_reg):
 
     length: int = 1024
 
-    
+
 
 class sAR_reg(atomic_reg):
     OP_NAME = "sAR"
@@ -2094,7 +2094,7 @@ class sAR_reg(atomic_reg):
         ("opd1_w_str", ctypes.c_uint64, 20),
         ("rsvd3", ctypes.c_uint64, 4),
     ]
-    
+
     cmd_short: int
     op_code: int
     cmd_id_dep: int
@@ -2146,7 +2146,7 @@ class sAR_reg(atomic_reg):
 
     length: int = 512
 
-    
+
 
 class PorD_reg(atomic_reg):
     OP_NAME = "PorD"
@@ -2240,7 +2240,7 @@ class PorD_reg(atomic_reg):
         ("res1_addr", ctypes.c_uint64, 32),
         ("opd3_addr", ctypes.c_uint64, 32),
     ]
-    
+
     cmd_short: int
     op_code: int
     cmd_id_dep: int
@@ -2332,7 +2332,7 @@ class PorD_reg(atomic_reg):
 
     length: int = 1024
 
-    
+
 
 class sPorD_reg(atomic_reg):
     OP_NAME = "sPorD"
@@ -2390,7 +2390,7 @@ class sPorD_reg(atomic_reg):
         ("opd3_addr", ctypes.c_uint64, 32),
         ("rsvd3", ctypes.c_uint64, 64),
     ]
-    
+
     cmd_short: int
     sym_range: int
     rsvd0: int
@@ -2446,7 +2446,7 @@ class sPorD_reg(atomic_reg):
 
     length: int = 512
 
-    
+
 
 class RQ_DQ_reg(atomic_reg):
     OP_NAME = "RQ&DQ"
@@ -2540,7 +2540,7 @@ class RQ_DQ_reg(atomic_reg):
         ("res1_addr", ctypes.c_uint64, 32),
         ("opd3_addr", ctypes.c_uint64, 32),
     ]
-    
+
     cmd_short: int
     op_code: int
     cmd_id_dep: int
@@ -2632,7 +2632,7 @@ class RQ_DQ_reg(atomic_reg):
 
     length: int = 1024
 
-    
+
 
 class sRQ_sDQ_reg(atomic_reg):
     OP_NAME = "sRQ&sDQ"
@@ -2663,7 +2663,7 @@ class sRQ_sDQ_reg(atomic_reg):
         ("opd1_addr", ctypes.c_uint64, 32),
         ("opd2_addr", ctypes.c_uint64, 32),
     ]
-    
+
     cmd_short: int
     sym_range: int
     op_code: int
@@ -2692,7 +2692,7 @@ class sRQ_sDQ_reg(atomic_reg):
 
     length: int = 256
 
-    
+
 
 class SG_reg(atomic_reg):
     OP_NAME = "SG"
@@ -2786,7 +2786,7 @@ class SG_reg(atomic_reg):
         ("res1_addr", ctypes.c_uint64, 32),
         ("opd3_addr", ctypes.c_uint64, 32),
     ]
-    
+
     cmd_short: int
     op_code: int
     cmd_id_dep: int
@@ -2878,7 +2878,7 @@ class SG_reg(atomic_reg):
 
     length: int = 1024
 
-    
+
 
 class sSG_reg(atomic_reg):
     OP_NAME = "sSG"
@@ -2913,7 +2913,7 @@ class sSG_reg(atomic_reg):
         ("res1_addr", ctypes.c_uint64, 32),
         ("opd3_addr", ctypes.c_uint64, 32),
     ]
-    
+
     cmd_short: int
     op_code: int
     cmd_id_dep: int
@@ -2946,7 +2946,7 @@ class sSG_reg(atomic_reg):
 
     length: int = 384
 
-    
+
 
 class SGL_reg(atomic_reg):
     OP_NAME = "SGL"
@@ -3040,7 +3040,7 @@ class SGL_reg(atomic_reg):
         ("res1_addr", ctypes.c_uint64, 32),
         ("opd3_addr", ctypes.c_uint64, 32),
     ]
-    
+
     cmd_short: int
     op_code: int
     cmd_id_dep: int
@@ -3132,7 +3132,7 @@ class SGL_reg(atomic_reg):
 
     length: int = 1024
 
-    
+
 
 class sSGL_reg(atomic_reg):
     OP_NAME = "sSGL"
@@ -3165,7 +3165,7 @@ class sSGL_reg(atomic_reg):
         ("res1_addr", ctypes.c_uint64, 32),
         ("rsvd3", ctypes.c_uint64, 64),
     ]
-    
+
     cmd_short: int
     op_code: int
     cmd_id_dep: int
@@ -3196,7 +3196,7 @@ class sSGL_reg(atomic_reg):
 
     length: int = 384
 
-    
+
 
 class CW_BC_reg(atomic_reg):
     OP_NAME = "CW&BC"
@@ -3290,7 +3290,7 @@ class CW_BC_reg(atomic_reg):
         ("res1_addr", ctypes.c_uint64, 32),
         ("opd3_addr", ctypes.c_uint64, 32),
     ]
-    
+
     cmd_short: int
     op_code: int
     cmd_id_dep: int
@@ -3382,7 +3382,7 @@ class CW_BC_reg(atomic_reg):
 
     length: int = 1024
 
-    
+
 
 class sCW_sBC_reg(atomic_reg):
     OP_NAME = "sCW&sBC"
@@ -3407,7 +3407,7 @@ class sCW_sBC_reg(atomic_reg):
         ("res0_addr", ctypes.c_uint64, 32),
         ("opd0_addr", ctypes.c_uint64, 32),
     ]
-    
+
     cmd_short: int
     op_code: int
     cmd_id_dep: int
@@ -3430,7 +3430,7 @@ class sCW_sBC_reg(atomic_reg):
 
     length: int = 256
 
-    
+
 
 class LAR_reg(atomic_reg):
     OP_NAME = "LAR"
@@ -3460,7 +3460,7 @@ class LAR_reg(atomic_reg):
         ("opd1_addr", ctypes.c_uint64, 16),
         ("opd2_addr", ctypes.c_uint64, 16),
     ]
-    
+
     opd0_w_str: int
     opd1_w_str: int
     opt_opd2_const: int
@@ -3488,7 +3488,7 @@ class LAR_reg(atomic_reg):
 
     length: int = 128
 
-    
+
 
 class SYS_reg(atomic_reg):
     OP_NAME = "SYS"
@@ -3505,7 +3505,7 @@ class SYS_reg(atomic_reg):
         ("intr_en", ctypes.c_uint64, 1),
         ("imm", ctypes.c_uint64, 64),
     ]
-    
+
     rsvd0: int
     rsvd1: int
     cmd_id_dep: int
@@ -3520,7 +3520,7 @@ class SYS_reg(atomic_reg):
 
     length: int = 128
 
-    
+
 
 class SYSID_reg(atomic_reg):
     OP_NAME = "SYSID"
@@ -3534,7 +3534,7 @@ class SYSID_reg(atomic_reg):
         ("reg_idx2", ctypes.c_uint64, 8),
         ("imm1", ctypes.c_uint64, 64),
     ]
-    
+
     imm0: int
     reg_idx0: int
     intr_en: int
@@ -3546,7 +3546,7 @@ class SYSID_reg(atomic_reg):
 
     length: int = 128
 
-    
+
 
 class SYS_TR_ACC_reg(atomic_reg):
     OP_NAME = "SYS_TR_ACC"
@@ -3560,7 +3560,7 @@ class SYS_TR_ACC_reg(atomic_reg):
         ("reg_idx2", ctypes.c_uint64, 8),
         ("imm1", ctypes.c_uint64, 64),
     ]
-    
+
     imm0: int
     reg_idx0: int
     intr_en: int
@@ -3572,7 +3572,7 @@ class SYS_TR_ACC_reg(atomic_reg):
 
     length: int = 128
 
-    
+
 
 class DMA_tensor_0x000__reg(atomic_reg):
     OP_NAME = "DMA_tensor（0x000）"
@@ -3629,7 +3629,7 @@ class DMA_tensor_0x000__reg(atomic_reg):
         ("localmem_mask_l32", ctypes.c_uint64, 32),
         ("localmem_mask_h32", ctypes.c_uint64, 32),
     ]
-    
+
     intr_en: int
     stride_enable: int
     nchw_copy: int
@@ -3684,7 +3684,7 @@ class DMA_tensor_0x000__reg(atomic_reg):
 
     length: int = 768
 
-    
+
 
 class DMA_matrix_reg(atomic_reg):
     OP_NAME = "DMA_matrix"
@@ -3738,7 +3738,7 @@ class DMA_matrix_reg(atomic_reg):
         ("localmem_mask_l32", ctypes.c_uint64, 32),
         ("localmem_mask_h32", ctypes.c_uint64, 32),
     ]
-    
+
     intr_en: int
     stride_enable: int
     nchw_copy: int
@@ -3790,7 +3790,7 @@ class DMA_matrix_reg(atomic_reg):
 
     length: int = 768
 
-    
+
 
 class DMA_masked_select_reg(atomic_reg):
     OP_NAME = "DMA_masked_select"
@@ -3845,7 +3845,7 @@ class DMA_masked_select_reg(atomic_reg):
         ("localmem_mask_l32", ctypes.c_uint64, 32),
         ("localmem_mask_h32", ctypes.c_uint64, 32),
     ]
-    
+
     intr_en: int
     stride_enable: int
     nchw_copy: int
@@ -3898,7 +3898,7 @@ class DMA_masked_select_reg(atomic_reg):
 
     length: int = 768
 
-    
+
     @property
     def src_hsize_src_wsize_high(self) -> int:
         return self["src_hsize/src_wsize_high"]
@@ -3958,7 +3958,7 @@ class DMA_general_reg(atomic_reg):
         ("localmem_mask_l32", ctypes.c_uint64, 32),
         ("localmem_mask_h32", ctypes.c_uint64, 32),
     ]
-    
+
     intr_en: int
     stride_enable: int
     nchw_copy: int
@@ -4010,7 +4010,7 @@ class DMA_general_reg(atomic_reg):
 
     length: int = 768
 
-    
+
     @property
     def src_cstride_move_length_(self) -> int:
         return self["src_cstride(move length)"]
@@ -4067,7 +4067,7 @@ class DMA_cw_transpose_reg(atomic_reg):
         ("localmem_mask_l32", ctypes.c_uint64, 32),
         ("localmem_mask_h32", ctypes.c_uint64, 32),
     ]
-    
+
     intr_en: int
     stride_enable: int
     nchw_copy: int
@@ -4119,7 +4119,7 @@ class DMA_cw_transpose_reg(atomic_reg):
 
     length: int = 768
 
-    
+
 
 class DMA_nonzero_reg(atomic_reg):
     OP_NAME = "DMA_nonzero"
@@ -4174,7 +4174,7 @@ class DMA_nonzero_reg(atomic_reg):
         ("localmem_mask_l32", ctypes.c_uint64, 32),
         ("localmem_mask_h32", ctypes.c_uint64, 32),
     ]
-    
+
     intr_en: int
     stride_enable: int
     nchw_copy: int
@@ -4227,7 +4227,7 @@ class DMA_nonzero_reg(atomic_reg):
 
     length: int = 768
 
-    
+
     @property
     def dst_nstride_base_i_(self) -> int:
         return self["dst_nstride（base_i）"]
@@ -4258,7 +4258,7 @@ class sDMA_sys_reg(atomic_reg):
         ("index", ctypes.c_uint64, 8),
         ("constant_value", ctypes.c_uint64, 32),
     ]
-    
+
     intr_en: int
     stride_enable: int
     nchw_copy: int
@@ -4284,7 +4284,7 @@ class sDMA_sys_reg(atomic_reg):
 
     length: int = 128
 
-    
+
 
 class DMA_gather_reg(atomic_reg):
     OP_NAME = "DMA_gather"
@@ -4338,7 +4338,7 @@ class DMA_gather_reg(atomic_reg):
         ("localmem_mask_l32", ctypes.c_uint64, 32),
         ("localmem_mask_h32", ctypes.c_uint64, 32),
     ]
-    
+
     intr_en: int
     stride_enable: int
     nchw_copy: int
@@ -4390,7 +4390,7 @@ class DMA_gather_reg(atomic_reg):
 
     length: int = 768
 
-    
+
 
 class DMA_scatter_reg(atomic_reg):
     OP_NAME = "DMA_scatter"
@@ -4444,7 +4444,7 @@ class DMA_scatter_reg(atomic_reg):
         ("localmem_mask_l32", ctypes.c_uint64, 32),
         ("localmem_mask_h32", ctypes.c_uint64, 32),
     ]
-    
+
     intr_en: int
     stride_enable: int
     nchw_copy: int
@@ -4496,7 +4496,7 @@ class DMA_scatter_reg(atomic_reg):
 
     length: int = 768
 
-    
+
 
 class DMA_reverse_reg(atomic_reg):
     OP_NAME = "DMA_reverse"
@@ -4550,7 +4550,7 @@ class DMA_reverse_reg(atomic_reg):
         ("localmem_mask_l32", ctypes.c_uint64, 32),
         ("localmem_mask_h32", ctypes.c_uint64, 32),
     ]
-    
+
     intr_en: int
     stride_enable: int
     nchw_copy: int
@@ -4602,7 +4602,7 @@ class DMA_reverse_reg(atomic_reg):
 
     length: int = 768
 
-    
+
 
 class DMA_compress_reg(atomic_reg):
     OP_NAME = "DMA_compress"
@@ -4659,7 +4659,7 @@ class DMA_compress_reg(atomic_reg):
         ("localmem_mask_l32", ctypes.c_uint64, 32),
         ("localmem_mask_h32", ctypes.c_uint64, 32),
     ]
-    
+
     intr_en: int
     stride_enable: int
     nchw_copy: int
@@ -4714,7 +4714,7 @@ class DMA_compress_reg(atomic_reg):
 
     length: int = 768
 
-    
+
 
 class DMA_decompress__reg(atomic_reg):
     OP_NAME = "DMA_decompress "
@@ -4771,7 +4771,7 @@ class DMA_decompress__reg(atomic_reg):
         ("localmem_mask_l32", ctypes.c_uint64, 32),
         ("localmem_mask_h32", ctypes.c_uint64, 32),
     ]
-    
+
     intr_en: int
     stride_enable: int
     nchw_copy: int
@@ -4826,7 +4826,7 @@ class DMA_decompress__reg(atomic_reg):
 
     length: int = 768
 
-    
+
 
 class DMA_lossy_compress_reg(atomic_reg):
     OP_NAME = "DMA_lossy_compress"
@@ -4883,7 +4883,7 @@ class DMA_lossy_compress_reg(atomic_reg):
         ("reserved", ctypes.c_uint64, 32),
         ("reserved", ctypes.c_uint64, 32),
     ]
-    
+
     intr_en: int
     stride_enable: int
     nchw_copy: int
@@ -4938,7 +4938,7 @@ class DMA_lossy_compress_reg(atomic_reg):
 
     length: int = 768
 
-    
+
 
 class DMA_lossy_decompress_reg(atomic_reg):
     OP_NAME = "DMA_lossy_decompress"
@@ -4995,7 +4995,7 @@ class DMA_lossy_decompress_reg(atomic_reg):
         ("localmem_mask_l32", ctypes.c_uint64, 32),
         ("localmem_mask_h32", ctypes.c_uint64, 32),
     ]
-    
+
     intr_en: int
     stride_enable: int
     nchw_copy: int
@@ -5050,7 +5050,7 @@ class DMA_lossy_decompress_reg(atomic_reg):
 
     length: int = 768
 
-    
+
 
 class DMA_randmask_reg(atomic_reg):
     OP_NAME = "DMA_randmask"
@@ -5106,7 +5106,7 @@ class DMA_randmask_reg(atomic_reg):
         ("localmem_mask_l32", ctypes.c_uint64, 32),
         ("localmem_mask_h32", ctypes.c_uint64, 32),
     ]
-    
+
     intr_en: int
     stride_enable: int
     nchw_copy: int
@@ -5160,7 +5160,7 @@ class DMA_randmask_reg(atomic_reg):
 
     length: int = 768
 
-    
+
 
 class DMA_tansfer_reg(atomic_reg):
     OP_NAME = "DMA_tansfer"
@@ -5214,7 +5214,7 @@ class DMA_tansfer_reg(atomic_reg):
         ("localmem_mask_l32", ctypes.c_uint64, 32),
         ("localmem_mask_h32", ctypes.c_uint64, 32),
     ]
-    
+
     intr_en: int
     stride_enable: int
     nchw_copy: int
@@ -5266,10 +5266,10 @@ class DMA_tansfer_reg(atomic_reg):
 
     length: int = 768
 
-    
+
 
 op_class_dic: Dict[str, Type[atomic_reg]] = {
-    
+
     "CONV": CONV_reg,
     "sCONV": sCONV_reg,
     "MM": MM_reg,

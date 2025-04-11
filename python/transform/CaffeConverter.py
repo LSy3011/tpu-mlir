@@ -1,4 +1,4 @@
-# Copyright (C) 2022 Sophgo Technologies Inc.  All rights reserved.
+# Copyright (C) 2022  All rights reserved.
 #
 # TPU-MLIR is licensed under the 2-Clause BSD License except for the
 # third-party components.
@@ -1372,7 +1372,7 @@ class CaffeConverter(BaseConverter):
             axis = [axis]
         output_shape = list(input_shape)
         for a in sorted(axis, reverse=True):
-            output_shape.pop(a)  
+            output_shape.pop(a)
         op = self.getOperand(layer.bottom[0])
         params = {}
         param = {

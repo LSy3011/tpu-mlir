@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # ==============================================================================
 #
-# Copyright (C) 2022 Sophgo Technologies Inc.  All rights reserved.
+# Copyright (C) 2022  All rights reserved.
 #
 # TPU-MLIR is licensed under the 2-Clause BSD License except for the
 # third-party components.
@@ -59,7 +59,7 @@ if __name__ == '__main__':
     parser.add_argument('--quantize_method_list', type=parse_method_list, default='MSE', help='threshold method for search qtable')
     parser.add_argument('--benchmark_method', type=str, default='cos', choices=['cos', 'snr'], help='method for search optimal threshold')
     parser.add_argument('--kurtosis_analysis', help='kurtosis analysis', action="store_true")
-    parser.add_argument('--part_quantize', 
+    parser.add_argument('--part_quantize',
                     help='quantize specific operators (default: conv and matmul). Pass operator names to add to the default list.', nargs='*')
     parser.add_argument('--part_asymmetric', help='some pattern use asymmetric quantize', action='store_true')
     parser.add_argument('-o', '--calibration_table', type=str, help='output threshold table')
@@ -79,7 +79,7 @@ if __name__ == '__main__':
         if tune_ds is not None:
             tune_ds.dump("./selected_tune_image_list.txt")
 
-    if args.part_quantize is not None: 
+    if args.part_quantize is not None:
         if len(args.part_quantize) == 0:
             quantize_ops = ['Conv', 'MatMul']
         else:
