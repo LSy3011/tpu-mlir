@@ -1,6 +1,6 @@
 //===----------------------------------------------------------------------===//
 //
-// Copyright (C) 2022 Sophgo Technologies Inc.  All rights reserved.
+
 //
 //===----------------------------------------------------------------------===//
 
@@ -46,6 +46,6 @@ void transpose(gtensor<DataType> &dst, gtensor<DataType> &src,
 template <typename DataType1, typename DataType2>
 void reduce(gtensor<DataType1> &dst, DataType2 &src, all_reduce_psum_t psum,
             all_reduce_opcode_t opcode);
-            
+
 } // namespace sdma
 } // namespace ppl
